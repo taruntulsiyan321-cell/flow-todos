@@ -137,3 +137,29 @@
   background-size: 200% 100%;
   animation: shimmer 2.5s linear infinite;
 }
+
+/* ===== Subtle ambient texture (dot grid + soft noise) ===== */
+.app-texture {
+  position: relative;
+  isolation: isolate;
+}
+.app-texture::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px),
+    radial-gradient(oklch(1 0 0 / 0.025) 1px, transparent 1px);
+  background-size: 22px 22px, 7px 7px;
+  background-position: 0 0, 11px 11px;
+  mask-image: radial-gradient(ellipse at 50% 30%, black 40%, transparent 90%);
+}
+.light .app-texture::before {
+  background-image:
+    radial-gradient(oklch(0.2 0.04 280 / 0.05) 1px, transparent 1px),
+    radial-gradient(oklch(0.2 0.04 280 / 0.03) 1px, transparent 1px);
+}
+.app-texture > * { position: relative; z-index: 1; }
+
