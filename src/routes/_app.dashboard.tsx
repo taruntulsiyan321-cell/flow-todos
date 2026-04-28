@@ -4,6 +4,7 @@ import { Flame, Sparkles, CheckSquare, Trophy, Plus, BookOpen, Calendar } from "
 import { supabase } from "@/integrations/supabase/client";
 import { XpBar } from "@/components/XpBar";
 import { AiCoachCard } from "@/components/AiCoachCard";
+import { ActivityLog } from "@/components/ActivityLog";
 import { rankFor } from "@/lib/xp";
 
 export const Route = createFileRoute("/_app/dashboard")({
@@ -217,6 +218,9 @@ function Dashboard() {
 
       {/* AI coach */}
       <AiCoachCard />
+
+      {/* Activity log — transparency on every XP change */}
+      <ActivityLog />
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">

@@ -283,6 +283,39 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_ledger: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          kind: string
+          occurred_on: string
+          source_id: string
+          source_table: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          kind: string
+          occurred_on?: string
+          source_id: string
+          source_table: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          occurred_on?: string
+          source_id?: string
+          source_table?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -293,6 +326,7 @@ export type Database = {
         Returns: undefined
       }
       calc_level: { Args: { p_xp: number }; Returns: number }
+      recompute_user_stats: { Args: { p_user: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

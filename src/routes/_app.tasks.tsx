@@ -72,6 +72,7 @@ function TasksPage() {
       return;
     }
     if (next) toast.success(`Quest complete! +${t.xp_reward} XP`, { duration: 1800 });
+    else toast(`−${t.xp_reward} XP removed`, { duration: 1600 });
   };
 
   const remove = async (id: string) => {
