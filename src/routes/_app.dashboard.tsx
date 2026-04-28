@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Flame, Sparkles, CheckSquare, Trophy, Plus } from "lucide-react";
+import { Flame, Sparkles, CheckSquare, Trophy, Plus, BookOpen, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { XpBar } from "@/components/XpBar";
+import { AiCoachCard } from "@/components/AiCoachCard";
 import { rankFor } from "@/lib/xp";
 
 export const Route = createFileRoute("/_app/dashboard")({
