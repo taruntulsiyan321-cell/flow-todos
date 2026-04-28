@@ -181,11 +181,7 @@ function Dashboard() {
 
       {/* Quick actions */}
       <div className="grid grid-cols-2 gap-3">
-        <Link
-          to="/habits"
-          className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]"
-          style={{ background: "var(--gradient-card)" }}
-        >
+        <Link to="/habits" className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]" style={{ background: "var(--gradient-card)" }}>
           <div>
             <Flame className="mb-2 h-5 w-5 text-warning" />
             <p className="text-sm font-semibold text-foreground">Habits</p>
@@ -193,11 +189,7 @@ function Dashboard() {
           </div>
           <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
         </Link>
-        <Link
-          to="/tasks"
-          className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]"
-          style={{ background: "var(--gradient-card)" }}
-        >
+        <Link to="/tasks" className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]" style={{ background: "var(--gradient-card)" }}>
           <div>
             <CheckSquare className="mb-2 h-5 w-5 text-accent" />
             <p className="text-sm font-semibold text-foreground">Tasks</p>
@@ -205,7 +197,26 @@ function Dashboard() {
           </div>
           <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
         </Link>
+        <Link to="/planner" className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]" style={{ background: "var(--gradient-card)" }}>
+          <div>
+            <Calendar className="mb-2 h-5 w-5 text-primary" />
+            <p className="text-sm font-semibold text-foreground">Planner</p>
+            <p className="text-xs text-muted-foreground">Schedule the day</p>
+          </div>
+          <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+        </Link>
+        <Link to="/journal" className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]" style={{ background: "var(--gradient-card)" }}>
+          <div>
+            <BookOpen className="mb-2 h-5 w-5 text-success" />
+            <p className="text-sm font-semibold text-foreground">Journal</p>
+            <p className="text-xs text-muted-foreground">Reflect & earn XP</p>
+          </div>
+          <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+        </Link>
       </div>
+
+      {/* AI coach */}
+      <AiCoachCard />
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
