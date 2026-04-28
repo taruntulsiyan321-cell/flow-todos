@@ -112,6 +112,93 @@ export type Database = {
         }
         Relationships: []
       }
+      journal_entries: {
+        Row: {
+          content: string
+          created_at: string
+          entry_date: string
+          id: string
+          mood: number | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          entry_date?: string
+          id?: string
+          mood?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          entry_date?: string
+          id?: string
+          mood?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      planner_events: {
+        Row: {
+          category: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          end_time: string | null
+          event_date: string
+          id: string
+          notes: string | null
+          start_time: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          category?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          end_time?: string | null
+          event_date?: string
+          id?: string
+          notes?: string | null
+          start_time?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          category?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          end_time?: string | null
+          event_date?: string
+          id?: string
+          notes?: string | null
+          start_time?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

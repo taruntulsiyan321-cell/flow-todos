@@ -1,12 +1,14 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, CheckSquare, Flame, User } from "lucide-react";
+import { Home, CheckSquare, Flame, User, BookOpen, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { to: "/dashboard", label: "Home", Icon: Home },
   { to: "/habits", label: "Habits", Icon: Flame },
   { to: "/tasks", label: "Tasks", Icon: CheckSquare },
-  { to: "/profile", label: "Profile", Icon: User },
+  { to: "/planner", label: "Plan", Icon: Calendar },
+  { to: "/journal", label: "Journal", Icon: BookOpen },
+  { to: "/profile", label: "Me", Icon: User },
 ] as const;
 
 export function MobileNav() {
