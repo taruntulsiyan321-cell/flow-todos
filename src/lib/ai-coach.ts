@@ -102,4 +102,8 @@ Provide 3 suggestions. No code fences, no extra prose.`;
         ],
       };
     }
+    } catch (err) {
+      console.error("getCoachInsight failed:", err);
+      return fallback;
+    }
   });
