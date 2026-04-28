@@ -38,11 +38,15 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    defaultPreloadStaleTime: 0,
+    defaultPreload: "intent",
+    defaultPreloadDelay: 30,
+    defaultPreloadStaleTime: 30_000,
+    defaultPendingMs: 200,
+    defaultPendingMinMs: 0,
     defaultErrorComponent: DefaultErrorComponent,
   });
   return router;
-};
+}
 
 declare module "@tanstack/react-router" {
   interface Register {
