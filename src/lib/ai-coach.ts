@@ -9,8 +9,16 @@ export type CoachInsight = {
 export const getCoachInsight = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<CoachInsight> => {
+    const fallback: CoachInsight = {
+      insight: "Keep going — small reps compound into big level-ups.",
+      suggestions: [
+        { title: "Two-minute kickoff", reason: "Lower the bar to start." },
+        { title: "Reflect for 60 seconds", reason: "Awareness drives growth." },
+        { title: "Plan tomorrow's top 3", reason: "Pre-deciding reduces friction." },
+      ],
+    };
+    try {
     const { supabase, userId } = context;
-    const today = new Date().toISOString().slice(0, 10);
     const sevenAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
 
     const [profileRes, habitsRes, checkinsRes, tasksRes, journalRes] = await Promise.all([
@@ -93,5 +101,9 @@ Provide 3 suggestions. No code fences, no extra prose.`;
           { title: "Schedule one focus block", reason: "Intent beats reaction." },
         ],
       };
+    }
+    } catch (err) {
+      console.error("getCoachInsight failed:", err);
+      return fallback;
     }
   });

@@ -61,7 +61,7 @@ export function AiCoachCard() {
       ) : data ? (
         <>
           <p className="mt-3 text-sm font-medium italic text-foreground">"{data.insight}"</p>
-          {data.suggestions.length > 0 && (
+          {data.suggestions && data.suggestions.length > 0 && (
             <ul className="mt-4 space-y-2">
               {data.suggestions.map((s, i) => (
                 <li key={i} className="rounded-xl border border-border bg-card/40 p-3">
