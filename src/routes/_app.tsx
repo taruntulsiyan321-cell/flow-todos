@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_app")({
 function AppLayout() {
   return (
     <div
-      className="min-h-screen bg-background pb-24"
+      className="app-texture min-h-screen bg-background pb-24"
       style={{ backgroundImage: "var(--gradient-glow)", backgroundRepeat: "no-repeat" }}
     >
       <div className="mx-auto max-w-2xl px-4 pb-8 pt-6 sm:px-6">
