@@ -80,6 +80,8 @@ function HabitsPage() {
       const { error } = await supabase.from("habit_checkins").delete().eq("habit_id", habit.id).eq("completed_on", today);
       if (error) return toast.error(error.message);
       const next = new Set(doneToday); next.delete(habit.id); setDoneToday(next);
+      toast(`−${habit.xp_reward} XP removed`, { duration: 1600 });
+      load();
     } else {
       const { error } = await supabase.from("habit_checkins").insert({
         habit_id: habit.id,
@@ -89,7 +91,7 @@ function HabitsPage() {
       if (error) return toast.error(error.message);
       const next = new Set(doneToday); next.add(habit.id); setDoneToday(next);
       toast.success(`+${habit.xp_reward} XP`, { duration: 1800 });
-      load(); // refresh streaks
+      load();
     }
   };
 

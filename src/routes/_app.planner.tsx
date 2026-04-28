@@ -96,6 +96,7 @@ function PlannerPage() {
     const { error } = await supabase.from("planner_events").update({ completed: next }).eq("id", e.id);
     if (error) return toast.error(error.message);
     if (next) toast.success("+10 XP");
+    else toast("−10 XP removed", { duration: 1600 });
     load();
   };
 
