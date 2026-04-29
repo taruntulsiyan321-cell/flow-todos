@@ -138,7 +138,7 @@
   animation: shimmer 2.5s linear infinite;
 }
 
-/* ===== Subtle ambient texture (dot grid + soft noise) ===== */
+/* ===== Light ambient texture (soft tinted dot grid) ===== */
 .app-texture {
   position: relative;
   isolation: isolate;
@@ -149,17 +149,19 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  background-color: oklch(0.98 0.02 295 / 0.04);
   background-image:
-    radial-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px),
-    radial-gradient(oklch(1 0 0 / 0.025) 1px, transparent 1px);
-  background-size: 22px 22px, 7px 7px;
-  background-position: 0 0, 11px 11px;
-  mask-image: radial-gradient(ellipse at 50% 30%, black 40%, transparent 90%);
+    radial-gradient(oklch(0.95 0.05 295 / 0.09) 1px, transparent 1.4px),
+    radial-gradient(oklch(0.92 0.08 200 / 0.06) 1px, transparent 1.2px);
+  background-size: 24px 24px, 9px 9px;
+  background-position: 0 0, 12px 12px;
+  mask-image: radial-gradient(ellipse at 50% 20%, black 50%, transparent 95%);
 }
 .light .app-texture::before {
+  background-color: oklch(0.6 0.18 295 / 0.025);
   background-image:
-    radial-gradient(oklch(0.2 0.04 280 / 0.05) 1px, transparent 1px),
-    radial-gradient(oklch(0.2 0.04 280 / 0.03) 1px, transparent 1px);
+    radial-gradient(oklch(0.55 0.2 295 / 0.08) 1px, transparent 1.4px),
+    radial-gradient(oklch(0.6 0.18 200 / 0.06) 1px, transparent 1.2px);
 }
 .app-texture > * { position: relative; z-index: 1; }
 
