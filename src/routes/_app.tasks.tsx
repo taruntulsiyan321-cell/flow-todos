@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { celebrateXp, deductXp } from "@/lib/feedback";
 
 export const Route = createFileRoute("/_app/tasks")({
   head: () => ({ meta: [{ title: "Tasks — Forge" }] }),
@@ -62,7 +63,7 @@ function TasksPage() {
 
   useEffect(() => { load(); }, []);
 
-  const toggle = async (t: Task) => {
+  const toggle = async (t: Task, btnEl?: Element | null) => {
     const next = !t.completed;
     setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, completed: next } : x)));
     const { error } = await supabase.from("tasks").update({ completed: next }).eq("id", t.id);
@@ -71,8 +72,16 @@ function TasksPage() {
       setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, completed: !next } : x)));
       return;
     }
-    if (next) toast.success(`Quest complete! +${t.xp_reward} XP`, { duration: 1800 });
-    else toast(`−${t.xp_reward} XP removed`, { duration: 1600 });
+    if (next) {
+      celebrateXp({ amount: t.xp_reward, origin: btnEl, message: `Quest complete! +${t.xp_reward} XP` });
+      const row = (btnEl as HTMLElement | null)?.closest("li");
+      if (row) {
+        row.classList.add("animate-celebrate");
+        setTimeout(() => row.classList.remove("animate-celebrate"), 950);
+      }
+    } else {
+      deductXp({ amount: t.xp_reward, origin: btnEl, message: `−${t.xp_reward} XP removed` });
+    }
   };
 
   const remove = async (id: string) => {
@@ -142,14 +151,14 @@ function TasksPage() {
                 style={{ background: "var(--gradient-card)" }}
               >
                 <button
-                  onClick={() => toggle(t)}
+                  onClick={(e) => toggle(t, e.currentTarget)}
                   className={cn(
                     "flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 transition-all active:scale-90",
                     t.completed ? "border-transparent text-primary-foreground" : "border-border hover:border-primary",
                   )}
                   style={t.completed ? { background: "var(--gradient-primary)" } : undefined}
                 >
-                  {t.completed && <Check className="h-4 w-4" strokeWidth={3} />}
+                  {t.completed && <Check className="h-4 w-4 animate-check-pop" strokeWidth={3} />}
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className={cn("text-sm font-medium text-foreground", t.completed && "line-through")}>{t.title}</p>
