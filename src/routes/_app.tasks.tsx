@@ -94,7 +94,7 @@ function TasksPage() {
   const remaining = tasks.filter((t) => !t.completed).length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-page-in">
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Quests</h1>

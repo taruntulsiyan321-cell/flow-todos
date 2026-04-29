@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { WeeklyJournalSummary } from "@/components/WeeklyJournalSummary";
 
 export const Route = createFileRoute("/_app/journal")({
   head: () => ({ meta: [{ title: "Journal — Forge" }] }),
@@ -94,7 +95,8 @@ function JournalPage() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-page-in">
+      <WeeklyJournalSummary />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">

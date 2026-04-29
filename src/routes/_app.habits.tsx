@@ -116,7 +116,7 @@ function HabitsPage() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-page-in">
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Habits</h1>
