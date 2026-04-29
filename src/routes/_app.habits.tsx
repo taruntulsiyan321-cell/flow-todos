@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Flame, Plus, Check, Trash2, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { celebrateXp, deductXp } from "@/lib/feedback";
 
 export const Route = createFileRoute("/_app/habits")({
   head: () => ({ meta: [{ title: "Habits — Forge" }] }),
@@ -72,25 +73,38 @@ function HabitsPage() {
 
   useEffect(() => { load(); }, []);
 
-  const toggleCheckin = async (habit: Habit) => {
+  const toggleCheckin = async (habit: Habit, btnEl?: Element | null) => {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
     const isDone = doneToday.has(habit.id);
     if (isDone) {
-      const { error } = await supabase.from("habit_checkins").delete().eq("habit_id", habit.id).eq("completed_on", today);
-      if (error) return toast.error(error.message);
+      // Optimistic
       const next = new Set(doneToday); next.delete(habit.id); setDoneToday(next);
-      toast(`−${habit.xp_reward} XP removed`, { duration: 1600 });
+      const { error } = await supabase.from("habit_checkins").delete().eq("habit_id", habit.id).eq("completed_on", today);
+      if (error) {
+        const revert = new Set(next); revert.add(habit.id); setDoneToday(revert);
+        return toast.error(error.message);
+      }
+      deductXp({ amount: habit.xp_reward, origin: btnEl, message: `−${habit.xp_reward} XP removed` });
       load();
     } else {
+      const next = new Set(doneToday); next.add(habit.id); setDoneToday(next);
       const { error } = await supabase.from("habit_checkins").insert({
         habit_id: habit.id,
         user_id: u.user.id,
         completed_on: today,
       });
-      if (error) return toast.error(error.message);
-      const next = new Set(doneToday); next.add(habit.id); setDoneToday(next);
-      toast.success(`+${habit.xp_reward} XP`, { duration: 1800 });
+      if (error) {
+        const revert = new Set(next); revert.delete(habit.id); setDoneToday(revert);
+        return toast.error(error.message);
+      }
+      celebrateXp({ amount: habit.xp_reward, origin: btnEl, message: `+${habit.xp_reward} XP earned` });
+      // Brief celebrate class on the row
+      const row = (btnEl as HTMLElement | null)?.closest("li");
+      if (row) {
+        row.classList.add("animate-celebrate");
+        setTimeout(() => row.classList.remove("animate-celebrate"), 950);
+      }
       load();
     }
   };
@@ -140,14 +154,14 @@ function HabitsPage() {
                 style={{ background: "var(--gradient-card)", boxShadow: done ? "var(--shadow-glow)" : undefined }}
               >
                 <button
-                  onClick={() => toggleCheckin(h)}
+                  onClick={(e) => toggleCheckin(h, e.currentTarget)}
                   className={cn(
                     "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 transition-all active:scale-90",
                     done ? "border-transparent text-primary-foreground" : "border-border hover:border-primary",
                   )}
                   style={done ? { background: "var(--gradient-primary)" } : undefined}
                 >
-                  {done && <Check className="h-6 w-6" strokeWidth={3} />}
+                  {done && <Check className="h-6 w-6 animate-check-pop" strokeWidth={3} />}
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className={cn("font-semibold text-foreground", done && "line-through opacity-60")}>{h.name}</p>
