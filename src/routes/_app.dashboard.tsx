@@ -1,10 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Flame, Sparkles, CheckSquare, Trophy, Plus, BookOpen, Calendar } from "lucide-react";
+import {
+  Flame,
+  Sparkles,
+  CheckSquare,
+  Trophy,
+  Plus,
+  BookOpen,
+  Calendar,
+  Target,
+  ArrowRight,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { XpBar } from "@/components/XpBar";
 import { AiCoachCard } from "@/components/AiCoachCard";
 import { ActivityLog } from "@/components/ActivityLog";
+import { SmartReminders } from "@/components/SmartReminders";
 import { rankFor } from "@/lib/xp";
 
 export const Route = createFileRoute("/_app/dashboard")({
@@ -20,6 +31,9 @@ const QUOTES = [
   "Progress, not perfection.",
   "Win the morning, win the day.",
   "Consistency beats intensity.",
+  "Showing up is the hardest part. You did it.",
+  "Action is the antidote to anxiety.",
+  "One percent better, every day.",
 ];
 
 type Profile = {
@@ -30,12 +44,20 @@ type Profile = {
   longest_streak: number;
 };
 
+type SuggestedAction =
+  | { kind: "habit"; id: string; title: string; xp: number }
+  | { kind: "task"; id: string; title: string; xp: number }
+  | { kind: "journal" }
+  | null;
+
 function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [habitsTotal, setHabitsTotal] = useState(0);
   const [habitsDone, setHabitsDone] = useState(0);
   const [tasksTotal, setTasksTotal] = useState(0);
   const [tasksDone, setTasksDone] = useState(0);
+  const [openTaskCount, setOpenTaskCount] = useState(0);
+  const [suggested, setSuggested] = useState<SuggestedAction>(null);
   const [loading, setLoading] = useState(true);
 
   const quote = useMemo(() => {
@@ -51,25 +73,62 @@ function Dashboard() {
       if (!uid) return;
       const today = new Date().toISOString().slice(0, 10);
 
-      const [profileRes, habitsRes, checkinsRes, tasksRes] = await Promise.all([
-        supabase.from("profiles").select("display_name,xp,level,current_streak,longest_streak").eq("id", uid).maybeSingle(),
-        supabase.from("habits").select("id").eq("archived", false),
+      const [profileRes, habitsRes, checkinsRes, todayTasksRes, openTasksRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("display_name,xp,level,current_streak,longest_streak")
+          .eq("id", uid)
+          .maybeSingle(),
+        supabase.from("habits").select("id,name,xp_reward").eq("archived", false),
         supabase.from("habit_checkins").select("habit_id").eq("completed_on", today),
         supabase.from("tasks").select("id,completed").gte("created_at", `${today}T00:00:00Z`),
+        supabase
+          .from("tasks")
+          .select("id,title,xp_reward,priority")
+          .eq("completed", false)
+          .order("priority", { ascending: true })
+          .limit(5),
       ]);
 
       if (!active) return;
       if (profileRes.data) setProfile(profileRes.data);
-      const habitIds = new Set((habitsRes.data ?? []).map((h) => h.id));
+      const habits = habitsRes.data ?? [];
+      const habitIds = new Set(habits.map((h) => h.id));
       setHabitsTotal(habitIds.size);
       const doneToday = new Set((checkinsRes.data ?? []).map((c) => c.habit_id));
       setHabitsDone(Array.from(doneToday).filter((id) => habitIds.has(id)).length);
-      const tasks = tasksRes.data ?? [];
-      setTasksTotal(tasks.length);
-      setTasksDone(tasks.filter((t) => t.completed).length);
+      const todayTasks = todayTasksRes.data ?? [];
+      setTasksTotal(todayTasks.length);
+      setTasksDone(todayTasks.filter((t) => t.completed).length);
+
+      const openTasks = openTasksRes.data ?? [];
+      setOpenTaskCount(openTasks.length);
+
+      // Pick a suggested next action
+      const remainingHabit = habits.find((h) => !doneToday.has(h.id));
+      if (remainingHabit) {
+        setSuggested({
+          kind: "habit",
+          id: remainingHabit.id,
+          title: remainingHabit.name,
+          xp: remainingHabit.xp_reward,
+        });
+      } else if (openTasks[0]) {
+        setSuggested({
+          kind: "task",
+          id: openTasks[0].id,
+          title: openTasks[0].title,
+          xp: openTasks[0].xp_reward,
+        });
+      } else {
+        setSuggested({ kind: "journal" });
+      }
+
       setLoading(false);
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Compute level progress from xp using same curve as DB
@@ -89,6 +148,10 @@ function Dashboard() {
   const totalActions = habitsTotal + tasksTotal;
   const doneActions = habitsDone + tasksDone;
   const dailyPct = totalActions === 0 ? 0 : Math.round((doneActions / totalActions) * 100);
+
+  // Today's mission XP target
+  const missionTarget = Math.max(50, habitsTotal * 10 + Math.min(tasksTotal, 3) * 15);
+
   const greeting = (() => {
     const h = new Date().getHours();
     if (h < 5) return "Up late";
@@ -97,28 +160,40 @@ function Dashboard() {
     return "Good evening";
   })();
 
+  const firstName = (profile?.display_name ?? "Adventurer").split(" ")[0];
+
   if (loading) {
-    return <div className="space-y-4 animate-pulse"><div className="h-32 rounded-3xl bg-card" /><div className="h-24 rounded-2xl bg-card" /><div className="h-24 rounded-2xl bg-card" /></div>;
+    return (
+      <div className="space-y-4 animate-page-in">
+        <div className="skeleton h-40 rounded-3xl" />
+        <div className="skeleton h-24 rounded-2xl" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="skeleton h-24 rounded-2xl" />
+          <div className="skeleton h-24 rounded-2xl" />
+        </div>
+        <div className="skeleton h-32 rounded-2xl" />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header card — Hero / status */}
+    <div className="space-y-5 animate-page-in">
+      {/* Hero — greeting + level + streak */}
       <div
         className="relative overflow-hidden rounded-3xl border border-border p-6"
         style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-card)" }}
       >
         <div className="flex items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm text-muted-foreground">{greeting},</p>
-            <h1 className="text-2xl font-bold text-foreground">
-              {profile?.display_name ?? "Adventurer"}
-            </h1>
+            <h1 className="truncate text-2xl font-bold text-foreground">{firstName}</h1>
           </div>
           <div className="flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-3 py-1.5">
             <Flame className="h-4 w-4 text-warning" />
             <span className="text-sm font-bold text-foreground">{profile?.current_streak ?? 0}</span>
-            <span className="text-xs text-muted-foreground">day{(profile?.current_streak ?? 0) === 1 ? "" : "s"}</span>
+            <span className="text-xs text-muted-foreground">
+              day{(profile?.current_streak ?? 0) === 1 ? "" : "s"}
+            </span>
           </div>
         </div>
 
@@ -147,29 +222,34 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Daily completion */}
+      {/* Today's Mission */}
       <div
         className="rounded-2xl border border-border p-5"
-        style={{ background: "var(--gradient-card)" }}
+        style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-glow-cyan)" }}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Today's quest</p>
-            <p className="mt-1 text-lg font-semibold text-foreground">
-              {doneActions} / {totalActions || "—"} complete
+            <div className="flex items-center gap-1.5">
+              <Target className="h-4 w-4 text-primary" />
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Today's mission</p>
+            </div>
+            <p className="mt-1 text-base font-semibold text-foreground">
+              {totalActions === 0
+                ? "Add a habit or quest to begin"
+                : `Complete ${totalActions} action${totalActions === 1 ? "" : "s"} for +${missionTarget} XP`}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {doneActions} of {totalActions || "—"} done · {dailyPct}%
             </p>
           </div>
-          <div className="text-right">
-            <p
-              className="text-3xl font-bold"
-              style={{
-                background: "var(--gradient-xp)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              {dailyPct}%
-            </p>
+          <div
+            className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-lg font-bold"
+            style={{
+              background: dailyPct === 100 ? "var(--gradient-primary)" : "var(--muted)",
+              color: dailyPct === 100 ? "var(--primary-foreground)" : "var(--foreground)",
+            }}
+          >
+            {dailyPct}%
           </div>
         </div>
         <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -180,46 +260,26 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* Suggested next action */}
+      {suggested && (
+        <SuggestedActionCard suggested={suggested} />
+      )}
+
       {/* Quick actions */}
       <div className="grid grid-cols-2 gap-3">
-        <Link to="/habits" className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]" style={{ background: "var(--gradient-card)" }}>
-          <div>
-            <Flame className="mb-2 h-5 w-5 text-warning" />
-            <p className="text-sm font-semibold text-foreground">Habits</p>
-            <p className="text-xs text-muted-foreground">{habitsDone}/{habitsTotal} today</p>
-          </div>
-          <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-        </Link>
-        <Link to="/tasks" className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]" style={{ background: "var(--gradient-card)" }}>
-          <div>
-            <CheckSquare className="mb-2 h-5 w-5 text-accent" />
-            <p className="text-sm font-semibold text-foreground">Tasks</p>
-            <p className="text-xs text-muted-foreground">{tasksDone}/{tasksTotal} today</p>
-          </div>
-          <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-        </Link>
-        <Link to="/planner" className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]" style={{ background: "var(--gradient-card)" }}>
-          <div>
-            <Calendar className="mb-2 h-5 w-5 text-primary" />
-            <p className="text-sm font-semibold text-foreground">Planner</p>
-            <p className="text-xs text-muted-foreground">Schedule the day</p>
-          </div>
-          <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-        </Link>
-        <Link to="/journal" className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]" style={{ background: "var(--gradient-card)" }}>
-          <div>
-            <BookOpen className="mb-2 h-5 w-5 text-success" />
-            <p className="text-sm font-semibold text-foreground">Journal</p>
-            <p className="text-xs text-muted-foreground">Reflect & earn XP</p>
-          </div>
-          <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-        </Link>
+        <QuickLink to="/habits" icon={<Flame className="h-5 w-5 text-warning" />} label="Habits" sub={`${habitsDone}/${habitsTotal} today`} />
+        <QuickLink to="/tasks" icon={<CheckSquare className="h-5 w-5 text-accent" />} label="Quests" sub={`${openTaskCount} open`} />
+        <QuickLink to="/planner" icon={<Calendar className="h-5 w-5 text-primary" />} label="Planner" sub="Schedule today" />
+        <QuickLink to="/journal" icon={<BookOpen className="h-5 w-5 text-success" />} label="Journal" sub="Reflect & earn" />
       </div>
+
+      {/* Smart nudges (with notification toggle) */}
+      <SmartReminders />
 
       {/* AI coach */}
       <AiCoachCard />
 
-      {/* Activity log — transparency on every XP change */}
+      {/* Activity log — transparency */}
       <ActivityLog />
 
       {/* Stats row */}
@@ -230,10 +290,7 @@ function Dashboard() {
       </div>
 
       {/* Quote */}
-      <div
-        className="rounded-2xl border border-border p-5 text-center"
-        style={{ background: "var(--gradient-card)" }}
-      >
+      <div className="rounded-2xl border border-border p-5 text-center" style={{ background: "var(--gradient-card)" }}>
         <p className="text-xs uppercase tracking-wider text-muted-foreground">Daily insight</p>
         <p className="mt-2 text-base font-medium italic text-foreground">"{quote}"</p>
       </div>
@@ -241,12 +298,61 @@ function Dashboard() {
   );
 }
 
-function StatChip({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+function SuggestedActionCard({ suggested }: { suggested: NonNullable<SuggestedAction> }) {
+  let title = "";
+  let sub = "";
+  let to: "/habits" | "/tasks" | "/journal" = "/habits";
+
+  if (suggested.kind === "habit") {
+    title = `Knock out: ${suggested.title}`;
+    sub = `+${suggested.xp} XP · habit check-in`;
+    to = "/habits";
+  } else if (suggested.kind === "task") {
+    title = `Tackle: ${suggested.title}`;
+    sub = `+${suggested.xp} XP · open quest`;
+    to = "/tasks";
+  } else {
+    title = "Reflect for a moment";
+    sub = "+20 XP · journal entry";
+    to = "/journal";
+  }
+
   return (
-    <div
-      className="rounded-2xl border border-border p-3 text-center"
+    <Link
+      to={to}
+      className="group flex items-center justify-between rounded-2xl border border-primary/30 p-4 transition-all hover:scale-[1.01] active:scale-[0.99]"
+      style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-glow)" }}
+    >
+      <div className="min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">Do this next</p>
+        <p className="mt-0.5 truncate text-sm font-semibold text-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground">{sub}</p>
+      </div>
+      <ArrowRight className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
+    </Link>
+  );
+}
+
+function QuickLink({ to, icon, label, sub }: { to: "/habits" | "/tasks" | "/planner" | "/journal"; icon: React.ReactNode; label: string; sub: string }) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]"
       style={{ background: "var(--gradient-card)" }}
     >
+      <div>
+        <div className="mb-2">{icon}</div>
+        <p className="text-sm font-semibold text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{sub}</p>
+      </div>
+      <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+    </Link>
+  );
+}
+
+function StatChip({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-border p-3 text-center" style={{ background: "var(--gradient-card)" }}>
       <div className="flex justify-center">{icon}</div>
       <p className="mt-1 text-lg font-bold text-foreground">{value}</p>
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
