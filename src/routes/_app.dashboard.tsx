@@ -7,7 +7,7 @@ import {
   Trophy,
   Plus,
   BookOpen,
-  Calendar,
+  BarChart3,
   Target,
   ArrowRight,
 } from "lucide-react";
