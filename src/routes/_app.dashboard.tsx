@@ -269,8 +269,8 @@ function Dashboard() {
       <div className="grid grid-cols-2 gap-3">
         <QuickLink to="/habits" icon={<Flame className="h-5 w-5 text-warning" />} label="Habits" sub={`${habitsDone}/${habitsTotal} today`} />
         <QuickLink to="/tasks" icon={<CheckSquare className="h-5 w-5 text-accent" />} label="Quests" sub={`${openTaskCount} open`} />
-        <QuickLink to="/planner" icon={<Calendar className="h-5 w-5 text-primary" />} label="Planner" sub="Schedule today" />
         <QuickLink to="/journal" icon={<BookOpen className="h-5 w-5 text-success" />} label="Journal" sub="Reflect & earn" />
+        <QuickLink to="/analytics" icon={<BarChart3 className="h-5 w-5 text-primary" />} label="Stats" sub="Weekly insights" />
       </div>
 
       {/* Smart nudges (with notification toggle) */}
@@ -333,7 +333,7 @@ function SuggestedActionCard({ suggested }: { suggested: NonNullable<SuggestedAc
   );
 }
 
-function QuickLink({ to, icon, label, sub }: { to: "/habits" | "/tasks" | "/planner" | "/journal"; icon: React.ReactNode; label: string; sub: string }) {
+function QuickLink({ to, icon, label, sub }: { to: "/habits" | "/tasks" | "/journal" | "/analytics"; icon: React.ReactNode; label: string; sub: string }) {
   return (
     <Link
       to={to}
