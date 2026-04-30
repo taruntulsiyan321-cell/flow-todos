@@ -6,6 +6,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { celebrateXp, deductXp } from "@/lib/feedback";
+import { HabitHeatmap } from "@/components/HabitHeatmap";
 
 export const Route = createFileRoute("/_app/habits")({
   head: () => ({ meta: [{ title: "Habits — Forge" }] }),
@@ -186,6 +187,8 @@ function HabitsPage() {
           })}
         </ul>
       )}
+
+      {!loading && habits.length > 0 && <HabitHeatmap />}
 
       {showAdd && <AddHabitSheet onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); load(); }} />}
     </div>
