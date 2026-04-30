@@ -10,6 +10,7 @@ import {
   BarChart3,
   Target,
   ArrowRight,
+  Users,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { XpBar } from "@/components/XpBar";
@@ -270,6 +271,7 @@ function Dashboard() {
         <QuickLink to="/habits" icon={<Flame className="h-5 w-5 text-warning" />} label="Habits" sub={`${habitsDone}/${habitsTotal} today`} />
         <QuickLink to="/tasks" icon={<CheckSquare className="h-5 w-5 text-accent" />} label="Quests" sub={`${openTaskCount} open`} />
         <QuickLink to="/journal" icon={<BookOpen className="h-5 w-5 text-success" />} label="Journal" sub="Reflect & earn" />
+        <QuickLink to="/communities" icon={<Users className="h-5 w-5 text-primary" />} label="Crew" sub="Communities" />
         <QuickLink to="/analytics" icon={<BarChart3 className="h-5 w-5 text-primary" />} label="Stats" sub="Weekly insights" />
       </div>
 
@@ -333,7 +335,7 @@ function SuggestedActionCard({ suggested }: { suggested: NonNullable<SuggestedAc
   );
 }
 
-function QuickLink({ to, icon, label, sub }: { to: "/habits" | "/tasks" | "/journal" | "/analytics"; icon: React.ReactNode; label: string; sub: string }) {
+function QuickLink({ to, icon, label, sub }: { to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities"; icon: React.ReactNode; label: string; sub: string }) {
   return (
     <Link
       to={to}
