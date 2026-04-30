@@ -109,6 +109,21 @@ function JournalPage() {
   return (
     <div className="space-y-5 animate-page-in">
       <WeeklyJournalSummary />
+
+      {/* Daily prompt */}
+      <button
+        onClick={usePrompt}
+        className="group block w-full rounded-2xl border border-primary/30 p-5 text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
+        style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-glow)" }}
+      >
+        <div className="flex items-center gap-2">
+          <Lightbulb className="h-4 w-4 text-primary" />
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">Today's prompt</p>
+        </div>
+        <p className="mt-2 text-sm font-medium text-foreground">{prompt.prompt}</p>
+        <p className="mt-2 text-xs text-muted-foreground">Tap to start writing →</p>
+      </button>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
