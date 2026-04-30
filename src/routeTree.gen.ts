@@ -19,6 +19,9 @@ import { Route as AppJournalRouteImport } from './routes/_app.journal'
 import { Route as AppHabitsRouteImport } from './routes/_app.habits'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
+import { Route as AppCommunitiesIndexRouteImport } from './routes/_app.communities.index'
+import { Route as AppCommunitiesNewRouteImport } from './routes/_app.communities.new'
+import { Route as AppCommunitiesSlugRouteImport } from './routes/_app.communities.$slug'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -69,6 +72,21 @@ const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCommunitiesIndexRoute = AppCommunitiesIndexRouteImport.update({
+  id: '/communities/',
+  path: '/communities/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCommunitiesNewRoute = AppCommunitiesNewRouteImport.update({
+  id: '/communities/new',
+  path: '/communities/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCommunitiesSlugRoute = AppCommunitiesSlugRouteImport.update({
+  id: '/communities/$slug',
+  path: '/communities/$slug',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,6 +98,9 @@ export interface FileRoutesByFullPath {
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/tasks': typeof AppTasksRoute
+  '/communities/$slug': typeof AppCommunitiesSlugRoute
+  '/communities/new': typeof AppCommunitiesNewRoute
+  '/communities/': typeof AppCommunitiesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,6 +112,9 @@ export interface FileRoutesByTo {
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/tasks': typeof AppTasksRoute
+  '/communities/$slug': typeof AppCommunitiesSlugRoute
+  '/communities/new': typeof AppCommunitiesNewRoute
+  '/communities': typeof AppCommunitiesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +128,9 @@ export interface FileRoutesById {
   '/_app/planner': typeof AppPlannerRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/tasks': typeof AppTasksRoute
+  '/_app/communities/$slug': typeof AppCommunitiesSlugRoute
+  '/_app/communities/new': typeof AppCommunitiesNewRoute
+  '/_app/communities/': typeof AppCommunitiesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +144,9 @@ export interface FileRouteTypes {
     | '/planner'
     | '/profile'
     | '/tasks'
+    | '/communities/$slug'
+    | '/communities/new'
+    | '/communities/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +158,9 @@ export interface FileRouteTypes {
     | '/planner'
     | '/profile'
     | '/tasks'
+    | '/communities/$slug'
+    | '/communities/new'
+    | '/communities'
   id:
     | '__root__'
     | '/'
@@ -140,6 +173,9 @@ export interface FileRouteTypes {
     | '/_app/planner'
     | '/_app/profile'
     | '/_app/tasks'
+    | '/_app/communities/$slug'
+    | '/_app/communities/new'
+    | '/_app/communities/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -220,6 +256,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnalyticsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/communities/': {
+      id: '/_app/communities/'
+      path: '/communities'
+      fullPath: '/communities/'
+      preLoaderRoute: typeof AppCommunitiesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/communities/new': {
+      id: '/_app/communities/new'
+      path: '/communities/new'
+      fullPath: '/communities/new'
+      preLoaderRoute: typeof AppCommunitiesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/communities/$slug': {
+      id: '/_app/communities/$slug'
+      path: '/communities/$slug'
+      fullPath: '/communities/$slug'
+      preLoaderRoute: typeof AppCommunitiesSlugRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -231,6 +288,9 @@ interface AppRouteChildren {
   AppPlannerRoute: typeof AppPlannerRoute
   AppProfileRoute: typeof AppProfileRoute
   AppTasksRoute: typeof AppTasksRoute
+  AppCommunitiesSlugRoute: typeof AppCommunitiesSlugRoute
+  AppCommunitiesNewRoute: typeof AppCommunitiesNewRoute
+  AppCommunitiesIndexRoute: typeof AppCommunitiesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -241,6 +301,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppPlannerRoute: AppPlannerRoute,
   AppProfileRoute: AppProfileRoute,
   AppTasksRoute: AppTasksRoute,
+  AppCommunitiesSlugRoute: AppCommunitiesSlugRoute,
+  AppCommunitiesNewRoute: AppCommunitiesNewRoute,
+  AppCommunitiesIndexRoute: AppCommunitiesIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

@@ -4,7 +4,7 @@ import { Plus, Users, Lock, Globe, Search, Hash } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_app/communities")({
+export const Route = createFileRoute("/_app/communities/")({
   head: () => ({ meta: [{ title: "Communities — Forge" }] }),
   component: CommunitiesPage,
 });
