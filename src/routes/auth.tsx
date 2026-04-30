@@ -5,6 +5,7 @@ import { Sparkles, Loader2, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { friendlyAuthError } from "@/lib/auth";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).catch("signin"),
@@ -74,8 +75,7 @@ function AuthPage() {
         navigate({ to: "/dashboard" });
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      toast.error(msg);
+      toast.error(friendlyAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -90,8 +90,7 @@ function AuthPage() {
       if (result.error) throw result.error;
       if (!result.redirected) navigate({ to: "/dashboard" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Google sign-in failed";
-      toast.error(msg);
+      toast.error(friendlyAuthError(err));
       setLoading(false);
     }
   };
