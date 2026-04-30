@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { BookOpen, Plus, Smile, Meh, Frown, Heart, Zap, Trash2, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { BookOpen, Plus, Smile, Meh, Frown, Heart, Zap, Trash2, Sparkles, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { WeeklyJournalSummary } from "@/components/WeeklyJournalSummary";
+import { dailyPrompt } from "@/lib/journal-prompts";
 
 export const Route = createFileRoute("/_app/journal")({
   head: () => ({ meta: [{ title: "Journal — Forge" }] }),
@@ -43,6 +44,17 @@ function JournalPage() {
   const [mood, setMood] = useState<number>(3);
   const [tagsInput, setTagsInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const prompt = useMemo(() => dailyPrompt(), []);
+
+  const usePrompt = () => {
+    setOpen(true);
+    setTitle((t) => t || prompt.prompt);
+    setTagsInput((cur) => {
+      const existing = cur.split(",").map((t) => t.trim()).filter(Boolean);
+      const merged = Array.from(new Set([...existing, ...prompt.tags]));
+      return merged.join(", ");
+    });
+  };
 
   const load = async () => {
     const { data } = await supabase
@@ -97,6 +109,21 @@ function JournalPage() {
   return (
     <div className="space-y-5 animate-page-in">
       <WeeklyJournalSummary />
+
+      {/* Daily prompt */}
+      <button
+        onClick={usePrompt}
+        className="group block w-full rounded-2xl border border-primary/30 p-5 text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
+        style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-glow)" }}
+      >
+        <div className="flex items-center gap-2">
+          <Lightbulb className="h-4 w-4 text-primary" />
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">Today's prompt</p>
+        </div>
+        <p className="mt-2 text-sm font-medium text-foreground">{prompt.prompt}</p>
+        <p className="mt-2 text-xs text-muted-foreground">Tap to start writing →</p>
+      </button>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">

@@ -18,16 +18,33 @@ export function levelFromXp(xp: number): { level: number; into: number; needed: 
 }
 
 export const RANK_TITLES = [
-  { min: 1, title: "Apprentice" },
-  { min: 5, title: "Initiate" },
-  { min: 10, title: "Adept" },
-  { min: 20, title: "Warrior" },
-  { min: 35, title: "Champion" },
-  { min: 50, title: "Hero" },
-  { min: 75, title: "Master" },
-  { min: 90, title: "Legend" },
+  { min: 1, title: "Apprentice", glyph: "✦" },
+  { min: 3, title: "Novice", glyph: "✧" },
+  { min: 5, title: "Initiate", glyph: "❖" },
+  { min: 8, title: "Disciple", glyph: "✺" },
+  { min: 12, title: "Adept", glyph: "✹" },
+  { min: 18, title: "Warrior", glyph: "⚔" },
+  { min: 25, title: "Knight", glyph: "✠" },
+  { min: 35, title: "Champion", glyph: "♛" },
+  { min: 50, title: "Hero", glyph: "★" },
+  { min: 70, title: "Master", glyph: "✷" },
+  { min: 85, title: "Grandmaster", glyph: "✸" },
+  { min: 95, title: "Legend", glyph: "☉" },
 ];
 
 export function rankFor(level: number): string {
   return [...RANK_TITLES].reverse().find((r) => level >= r.min)?.title ?? "Apprentice";
+}
+
+export function rankInfo(level: number) {
+  const sorted = [...RANK_TITLES].sort((a, b) => a.min - b.min);
+  let current = sorted[0];
+  let next: typeof sorted[number] | null = null;
+  for (let i = 0; i < sorted.length; i++) {
+    if (level >= sorted[i].min) {
+      current = sorted[i];
+      next = sorted[i + 1] ?? null;
+    }
+  }
+  return { current, next };
 }

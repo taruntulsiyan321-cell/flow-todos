@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { LogOut, Trophy, Flame, Sparkles, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { rankFor } from "@/lib/xp";
+import { rankFor, rankInfo, levelFromXp, xpForLevel } from "@/lib/xp";
 import { XpBar } from "@/components/XpBar";
 import { signOut } from "@/lib/auth";
 
@@ -58,11 +58,21 @@ function ProfilePage() {
   if (!profile) return <div className="h-64 animate-pulse rounded-3xl bg-card" />;
 
   // level progress
-  let lvl = 1, rem = profile.xp, need = lvl * 100;
-  while (rem >= need && lvl < 100) { rem -= need; lvl += 1; need = lvl * 100; }
+  const { level: lvl, into: rem, needed: need } = levelFromXp(profile.xp);
+  const { current, next } = rankInfo(lvl);
+  const xpForCurrentRank = xpForLevel(current.min);
+  const xpForNextRank = next ? xpForLevel(next.min) : null;
+  const rankProgressPct =
+    next && xpForNextRank
+      ? Math.min(
+          100,
+          Math.round(((profile.xp - xpForCurrentRank) / (xpForNextRank - xpForCurrentRank)) * 100),
+        )
+      : 100;
+  const xpToNextRank = xpForNextRank ? Math.max(0, xpForNextRank - profile.xp) : 0;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-page-in">
       {/* Hero */}
       <div
         className="relative overflow-hidden rounded-3xl border border-border p-6 text-center"
@@ -75,7 +85,10 @@ function ProfilePage() {
           <span className="text-2xl font-bold">{lvl}</span>
         </div>
         <h1 className="mt-3 text-xl font-bold text-foreground">{profile.display_name ?? "Adventurer"}</h1>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">{rankFor(lvl)} · {email}</p>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          <span className="mr-1">{current.glyph}</span>
+          {rankFor(lvl)} · {email}
+        </p>
 
         <div className="mt-5">
           <div className="mb-1.5 flex justify-between text-xs text-muted-foreground">
@@ -83,6 +96,28 @@ function ProfilePage() {
             <span>{rem}/{need} XP</span>
           </div>
           <XpBar into={rem} needed={need} />
+        </div>
+
+        {/* Rank progress */}
+        <div className="mt-5 rounded-2xl border border-border bg-card/50 p-4 text-left">
+          <div className="mb-2 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Rank progress</p>
+              <p className="text-sm font-semibold text-foreground">
+                {current.glyph} {current.title}
+                {next && <span className="text-muted-foreground"> → {next.glyph} {next.title}</span>}
+              </p>
+            </div>
+            <span className="text-xs font-medium text-muted-foreground">
+              {next ? `${xpToNextRank} XP to go` : "Max rank"}
+            </span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${rankProgressPct}%`, background: "var(--gradient-primary)" }}
+            />
+          </div>
         </div>
       </div>
 
