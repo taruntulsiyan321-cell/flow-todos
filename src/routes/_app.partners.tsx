@@ -80,11 +80,8 @@ function PartnersPage() {
     const idArr = Array.from(otherIds);
     const profileMap = new Map<string, Profile>();
     if (idArr.length) {
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, display_name, xp, level, current_streak")
-        .in("id", idArr);
-      (profs ?? []).forEach((p) => profileMap.set(p.id, p as Profile));
+      const { data: profs } = await supabase.rpc("get_public_profiles", { p_ids: idArr });
+      ((profs ?? []) as Profile[]).forEach((p) => profileMap.set(p.id, p));
     }
 
     setPartners(
