@@ -717,6 +717,16 @@ export type Database = {
         Returns: undefined
       }
       calc_level: { Args: { p_xp: number }; Returns: number }
+      get_public_profiles: {
+        Args: { p_ids: string[] }
+        Returns: {
+          current_streak: number
+          display_name: string
+          id: string
+          level: number
+          xp: number
+        }[]
+      }
       is_community_admin: {
         Args: { _community: string; _user: string }
         Returns: boolean
@@ -726,6 +736,16 @@ export type Database = {
         Returns: boolean
       }
       recompute_user_stats: { Args: { p_user: string }; Returns: undefined }
+      search_users: {
+        Args: { p_query: string }
+        Returns: {
+          current_streak: number
+          display_name: string
+          id: string
+          level: number
+          xp: number
+        }[]
+      }
     }
     Enums: {
       community_role: "member" | "moderator" | "admin"
