@@ -252,9 +252,11 @@ function CommunityDetail() {
             {(
               [
                 ["feed", "Feed", MessageSquare],
-                ["leaderboard", "Leaderboard", Trophy],
+                ["chat", "Chat", MessagesSquare],
+                ["rank", "Rank", Sparkles],
+                ["leaderboard", "Board", Trophy],
                 ["members", "Members", Users],
-                ["challenges", "Challenges", Target],
+                ["challenges", "Quests", Target],
               ] as const
             ).map(([id, label, Icon]) => (
               <button
@@ -272,6 +274,8 @@ function CommunityDetail() {
           </div>
 
           {tab === "feed" && me && <FeedTab communityId={community.id} me={me} />}
+          {tab === "chat" && me && <CommunityChat communityId={community.id} me={me} />}
+          {tab === "rank" && me && <RankTab communityId={community.id} me={me} />}
           {tab === "leaderboard" && <LeaderboardTab communityId={community.id} />}
           {tab === "members" && <MembersTab communityId={community.id} createdBy={community.created_by} />}
           {tab === "challenges" && me && (
