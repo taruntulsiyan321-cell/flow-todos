@@ -7,6 +7,7 @@ import {
   Globe,
   Trophy,
   MessageSquare,
+  MessagesSquare,
   Flame,
   Target,
   Heart,
@@ -16,10 +17,14 @@ import {
   Check,
   Loader2,
   Plus,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { rankFor } from "@/lib/xp";
+import { PostComments } from "@/components/PostComments";
+import { CommunityChat } from "@/components/CommunityChat";
+import { RankTrack } from "@/components/RankTrack";
 
 export const Route = createFileRoute("/_app/communities/$slug")({
   head: ({ params }) => ({ meta: [{ title: `${params.slug} — Forge` }] }),
@@ -74,7 +79,7 @@ type Challenge = {
   joined: boolean;
 };
 
-type Tab = "feed" | "leaderboard" | "members" | "challenges";
+type Tab = "feed" | "chat" | "leaderboard" | "members" | "challenges" | "rank";
 
 function CommunityDetail() {
   const { slug } = Route.useParams();
@@ -247,9 +252,11 @@ function CommunityDetail() {
             {(
               [
                 ["feed", "Feed", MessageSquare],
-                ["leaderboard", "Leaderboard", Trophy],
+                ["chat", "Chat", MessagesSquare],
+                ["rank", "Rank", Sparkles],
+                ["leaderboard", "Board", Trophy],
                 ["members", "Members", Users],
-                ["challenges", "Challenges", Target],
+                ["challenges", "Quests", Target],
               ] as const
             ).map(([id, label, Icon]) => (
               <button
@@ -267,6 +274,8 @@ function CommunityDetail() {
           </div>
 
           {tab === "feed" && me && <FeedTab communityId={community.id} me={me} />}
+          {tab === "chat" && me && <CommunityChat communityId={community.id} me={me} />}
+          {tab === "rank" && me && <RankTab communityId={community.id} me={me} />}
           {tab === "leaderboard" && <LeaderboardTab communityId={community.id} />}
           {tab === "members" && <MembersTab communityId={community.id} createdBy={community.created_by} />}
           {tab === "challenges" && me && (
@@ -489,6 +498,7 @@ function FeedTab({ communityId, me }: { communityId: string; me: string }) {
                 </button>
               )}
             </div>
+            <PostComments postId={p.id} communityId={communityId} me={me} />
           </article>
         ))
       )}
@@ -918,6 +928,113 @@ function ChallengesTab({
           );
         })
       )}
+    </div>
+  );
+}
+
+function RankTab({ communityId, me }: { communityId: string; me: string }) {
+  const [loading, setLoading] = useState(true);
+  const [myXp, setMyXp] = useState(0);
+  const [weeklyXp, setWeeklyXp] = useState(0);
+  const [position, setPosition] = useState<number | null>(null);
+  const [total, setTotal] = useState(0);
+  const [topMembers, setTopMembers] = useState<MemberRow[]>([]);
+
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [communityId, me]);
+
+  async function load() {
+    setLoading(true);
+    const { data: members } = await supabase
+      .from("community_member_stats")
+      .select("user_id, role, display_name, avatar_url, xp, level, current_streak, longest_streak")
+      .eq("community_id", communityId);
+    const rows = ((members ?? []) as MemberRow[]).sort((a, b) => b.xp - a.xp);
+    setTotal(rows.length);
+    const idx = rows.findIndex((r) => r.user_id === me);
+    setPosition(idx >= 0 ? idx + 1 : null);
+    setTopMembers(rows.slice(0, 5));
+    const mine = rows.find((r) => r.user_id === me);
+    setMyXp(mine?.xp ?? 0);
+
+    const since = new Date();
+    since.setDate(since.getDate() - 7);
+    const { data: ledger } = await supabase
+      .from("xp_ledger")
+      .select("amount")
+      .eq("user_id", me)
+      .gte("occurred_on", since.toISOString().slice(0, 10));
+    setWeeklyXp((ledger ?? []).reduce((s, l: { amount: number }) => s + l.amount, 0));
+    setLoading(false);
+  }
+
+  if (loading) {
+    return <div className="h-48 animate-pulse rounded-2xl border border-border bg-card/40" />;
+  }
+
+  return (
+    <div className="space-y-4">
+      <RankTrack xp={myXp} weeklyXp={weeklyXp} rankInCrew={position} totalMembers={total} />
+
+      <div
+        className="rounded-2xl border border-border p-4"
+        style={{ background: "var(--gradient-card)" }}
+      >
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Top of the crew
+          </h3>
+          <Trophy className="h-4 w-4 text-primary" />
+        </div>
+        <ol className="space-y-2">
+          {topMembers.map((m, i) => {
+            const isMe = m.user_id === me;
+            return (
+              <li
+                key={m.user_id}
+                className={`flex items-center gap-3 rounded-xl border p-2.5 transition-all ${
+                  isMe ? "border-primary/50" : "border-border bg-background/40"
+                }`}
+                style={
+                  isMe
+                    ? {
+                        background: "color-mix(in oklab, var(--primary) 12%, transparent)",
+                        boxShadow: "0 0 16px color-mix(in oklab, var(--primary) 25%, transparent)",
+                      }
+                    : undefined
+                }
+              >
+                <span className="w-6 text-center text-sm font-bold text-primary">
+                  {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium text-foreground">
+                    {m.display_name ?? "Member"} {isMe && <span className="text-xs text-primary">(you)</span>}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Lv {m.level} · {rankFor(m.level)}
+                  </div>
+                </div>
+                <div className="text-sm font-semibold text-primary">{m.xp} XP</div>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      <Link
+        to="/partners"
+        className="flex items-center justify-between rounded-2xl border border-border p-4 transition-all hover:border-primary/50"
+        style={{ background: "var(--gradient-card)" }}
+      >
+        <div>
+          <div className="text-sm font-semibold text-foreground">Find an accountability partner</div>
+          <div className="text-xs text-muted-foreground">Pair up to climb faster.</div>
+        </div>
+        <Sparkles className="h-5 w-5 text-primary" />
+      </Link>
     </div>
   );
 }
