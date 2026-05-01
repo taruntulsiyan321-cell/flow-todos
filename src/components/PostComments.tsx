@@ -113,7 +113,7 @@ export function PostComments({
       });
       if (error) throw error;
       setBody("");
-      triggerFeedback("light");
+      tap();
       await load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't comment");
@@ -130,7 +130,7 @@ export function PostComments({
           : x,
       ),
     );
-    triggerFeedback("light");
+    tap();
     if (c.liked_by_me) {
       await supabase
         .from("community_post_comment_likes")
