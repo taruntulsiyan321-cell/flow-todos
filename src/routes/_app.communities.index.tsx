@@ -113,13 +113,21 @@ function CommunitiesPage() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Communities</h1>
           <p className="text-sm text-muted-foreground">Build streaks together.</p>
         </div>
-        <Link
-          to="/communities/new"
-          className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-primary-foreground"
-          style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}
-        >
-          <Plus className="h-4 w-4" /> New
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/partners"
+            className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:text-primary"
+          >
+            <Users className="h-4 w-4" /> Partners
+          </Link>
+          <Link
+            to="/communities/new"
+            className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-primary-foreground"
+            style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}
+          >
+            <Plus className="h-4 w-4" /> New
+          </Link>
+        </div>
       </header>
 
       <div
