@@ -182,6 +182,109 @@ export type Database = {
           },
         ]
       }
+      community_messages: {
+        Row: {
+          body: string
+          community_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          community_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          community_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_messages_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_post_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "community_post_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_post_comments: {
+        Row: {
+          body: string
+          community_id: string
+          created_at: string
+          id: string
+          like_count: number
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          community_id: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          community_id?: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_comments_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_post_likes: {
         Row: {
           created_at: string
@@ -362,6 +465,57 @@ export type Database = {
           updated_at?: string
           user_id?: string
           xp_reward?: number
+        }
+        Relationships: []
+      }
+      partner_invites: {
+        Row: {
+          created_at: string
+          from_user: string
+          id: string
+          message: string | null
+          responded_at: string | null
+          status: Database["public"]["Enums"]["partner_invite_status"]
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          from_user: string
+          id?: string
+          message?: string | null
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["partner_invite_status"]
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          from_user?: string
+          id?: string
+          message?: string | null
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["partner_invite_status"]
+          to_user?: string
+        }
+        Relationships: []
+      }
+      partnerships: {
+        Row: {
+          created_at: string
+          id: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_a?: string
+          user_b?: string
         }
         Relationships: []
       }
@@ -557,6 +711,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_partner_invite: { Args: { p_invite: string }; Returns: string }
       award_xp: {
         Args: { p_amount: number; p_user: string }
         Returns: undefined
@@ -574,6 +729,7 @@ export type Database = {
     }
     Enums: {
       community_role: "member" | "moderator" | "admin"
+      partner_invite_status: "pending" | "accepted" | "declined" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -702,6 +858,7 @@ export const Constants = {
   public: {
     Enums: {
       community_role: ["member", "moderator", "admin"],
+      partner_invite_status: ["pending", "accepted", "declined", "cancelled"],
     },
   },
 } as const
