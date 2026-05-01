@@ -118,12 +118,7 @@ function PartnersPage() {
       return;
     }
     setSearching(true);
-    const { data } = await supabase
-      .from("profiles")
-      .select("id, display_name, xp, level, current_streak")
-      .ilike("display_name", `%${q}%`)
-      .neq("id", me)
-      .limit(10);
+    const { data } = await supabase.rpc("search_users", { p_query: q });
     setResults((data ?? []) as Profile[]);
     setSearching(false);
   }
