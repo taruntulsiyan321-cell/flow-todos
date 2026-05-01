@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import { Heart, Loader2, MessageCircle, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { triggerFeedback } from "@/lib/feedback";
+
+const tap = () => {
+  try {
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(8);
+  } catch {
+    /* ignore */
+  }
+};
 
 type Comment = {
   id: string;
