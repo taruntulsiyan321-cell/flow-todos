@@ -498,6 +498,7 @@ function FeedTab({ communityId, me }: { communityId: string; me: string }) {
                 </button>
               )}
             </div>
+            <PostComments postId={p.id} communityId={communityId} me={me} />
           </article>
         ))
       )}
