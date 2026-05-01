@@ -79,7 +79,7 @@ type Challenge = {
   joined: boolean;
 };
 
-type Tab = "feed" | "leaderboard" | "members" | "challenges";
+type Tab = "feed" | "chat" | "leaderboard" | "members" | "challenges" | "rank";
 
 function CommunityDetail() {
   const { slug } = Route.useParams();
