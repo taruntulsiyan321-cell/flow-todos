@@ -7,6 +7,7 @@ import {
   Globe,
   Trophy,
   MessageSquare,
+  MessagesSquare,
   Flame,
   Target,
   Heart,
@@ -16,10 +17,14 @@ import {
   Check,
   Loader2,
   Plus,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { rankFor } from "@/lib/xp";
+import { PostComments } from "@/components/PostComments";
+import { CommunityChat } from "@/components/CommunityChat";
+import { RankTrack } from "@/components/RankTrack";
 
 export const Route = createFileRoute("/_app/communities/$slug")({
   head: ({ params }) => ({ meta: [{ title: `${params.slug} — Forge` }] }),
