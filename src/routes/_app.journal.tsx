@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { WeeklyJournalSummary } from "@/components/WeeklyJournalSummary";
 import { dailyPrompt } from "@/lib/journal-prompts";
+import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
 
 export const Route = createFileRoute("/_app/journal")({
   head: () => ({ meta: [{ title: "Journal — Forge" }] }),
@@ -36,8 +37,9 @@ const MOODS = [
 ];
 
 function JournalPage() {
-  const [entries, setEntries] = useState<Entry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = cacheGet<Entry[]>("journal");
+  const [entries, setEntries] = useState<Entry[]>(cached ?? []);
+  const [loading, setLoading] = useState(!cached);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -63,7 +65,9 @@ function JournalPage() {
       .order("entry_date", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(50);
-    setEntries(data ?? []);
+    const next = data ?? [];
+    setEntries(next);
+    cacheSet("journal", next);
     setLoading(false);
   };
 
@@ -98,12 +102,18 @@ function JournalPage() {
     setMood(3);
     setTagsInput("");
     setOpen(false);
+    cacheInvalidate("dashboard");
     load();
   };
 
   const remove = async (id: string) => {
     await supabase.from("journal_entries").delete().eq("id", id);
-    setEntries((e) => e.filter((x) => x.id !== id));
+    setEntries((e) => {
+      const next = e.filter((x) => x.id !== id);
+      cacheSet("journal", next);
+      return next;
+    });
+    cacheInvalidate("dashboard");
   };
 
   return (
