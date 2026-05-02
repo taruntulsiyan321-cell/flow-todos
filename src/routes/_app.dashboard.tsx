@@ -18,6 +18,7 @@ import { AiCoachCard } from "@/components/AiCoachCard";
 import { ActivityLog } from "@/components/ActivityLog";
 import { SmartReminders } from "@/components/SmartReminders";
 import { rankFor } from "@/lib/xp";
+import { cacheGet, cacheSet } from "@/lib/page-cache";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Forge" }] }),
@@ -51,15 +52,26 @@ type SuggestedAction =
   | { kind: "journal" }
   | null;
 
+type DashCache = {
+  profile: Profile | null;
+  habitsTotal: number;
+  habitsDone: number;
+  tasksTotal: number;
+  tasksDone: number;
+  openTaskCount: number;
+  suggested: SuggestedAction;
+};
+
 function Dashboard() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [habitsTotal, setHabitsTotal] = useState(0);
-  const [habitsDone, setHabitsDone] = useState(0);
-  const [tasksTotal, setTasksTotal] = useState(0);
-  const [tasksDone, setTasksDone] = useState(0);
-  const [openTaskCount, setOpenTaskCount] = useState(0);
-  const [suggested, setSuggested] = useState<SuggestedAction>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = cacheGet<DashCache>("dashboard");
+  const [profile, setProfile] = useState<Profile | null>(cached?.profile ?? null);
+  const [habitsTotal, setHabitsTotal] = useState(cached?.habitsTotal ?? 0);
+  const [habitsDone, setHabitsDone] = useState(cached?.habitsDone ?? 0);
+  const [tasksTotal, setTasksTotal] = useState(cached?.tasksTotal ?? 0);
+  const [tasksDone, setTasksDone] = useState(cached?.tasksDone ?? 0);
+  const [openTaskCount, setOpenTaskCount] = useState(cached?.openTaskCount ?? 0);
+  const [suggested, setSuggested] = useState<SuggestedAction>(cached?.suggested ?? null);
+  const [loading, setLoading] = useState(!cached);
 
   const quote = useMemo(() => {
     const idx = new Date().getDate() % QUOTES.length;
