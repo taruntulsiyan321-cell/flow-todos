@@ -125,8 +125,19 @@ function PartnersPage() {
 
   async function invite(profile: Profile) {
     if (!me) return;
+    if (profile.id === me) {
+      toast.error("You can't partner with yourself");
+      return;
+    }
     if (partners.some((p) => p.partner.id === profile.id)) {
       toast.error("Already partners");
+      return;
+    }
+    if (
+      outgoing.some((i) => i.to_user === profile.id) ||
+      incoming.some((i) => i.from_user === profile.id)
+    ) {
+      toast.error("There's already a pending invite with this member");
       return;
     }
     const { error } = await supabase.from("partner_invites").insert({
