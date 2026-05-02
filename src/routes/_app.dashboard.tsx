@@ -118,24 +118,37 @@ function Dashboard() {
       setOpenTaskCount(openTasks.length);
 
       // Pick a suggested next action
+      let nextSuggested: SuggestedAction = null;
       const remainingHabit = habits.find((h) => !doneToday.has(h.id));
       if (remainingHabit) {
-        setSuggested({
+        nextSuggested = {
           kind: "habit",
           id: remainingHabit.id,
           title: remainingHabit.name,
           xp: remainingHabit.xp_reward,
-        });
+        };
       } else if (openTasks[0]) {
-        setSuggested({
+        nextSuggested = {
           kind: "task",
           id: openTasks[0].id,
           title: openTasks[0].title,
           xp: openTasks[0].xp_reward,
-        });
+        };
       } else {
-        setSuggested({ kind: "journal" });
+        nextSuggested = { kind: "journal" };
       }
+      setSuggested(nextSuggested);
+
+      const profileData = profileRes.data ?? null;
+      cacheSet<DashCache>("dashboard", {
+        profile: profileData,
+        habitsTotal: habitIds.size,
+        habitsDone: Array.from(doneToday).filter((id) => habitIds.has(id)).length,
+        tasksTotal: todayTasks.length,
+        tasksDone: todayTasks.filter((t) => t.completed).length,
+        openTaskCount: openTasks.length,
+        suggested: nextSuggested,
+      });
 
       setLoading(false);
     })();
