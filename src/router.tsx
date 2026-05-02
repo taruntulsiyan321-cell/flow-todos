@@ -41,7 +41,11 @@ export const getRouter = () => {
     defaultPreload: "intent",
     defaultPreloadDelay: 30,
     defaultPreloadStaleTime: 30_000,
-    defaultPendingMs: 200,
+    // Don't show a pending fallback unless a navigation truly stalls.
+    // Most page transitions complete in <100ms, so showing the pending
+    // component briefly creates a flicker that feels laggier than just
+    // waiting. Bumping defaultPendingMs to 800ms keeps things calm.
+    defaultPendingMs: 800,
     defaultPendingMinMs: 0,
     defaultErrorComponent: DefaultErrorComponent,
   });
