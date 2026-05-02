@@ -70,13 +70,19 @@ function TasksPage() {
 
   const toggle = async (t: Task, btnEl?: Element | null) => {
     const next = !t.completed;
-    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, completed: next } : x)));
+    setTasks((prev) => {
+      const upd = prev.map((x) => (x.id === t.id ? { ...x, completed: next } : x));
+      cacheSet("tasks", upd);
+      return upd;
+    });
     const { error } = await supabase.from("tasks").update({ completed: next }).eq("id", t.id);
     if (error) {
       toast.error(error.message);
       setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, completed: !next } : x)));
       return;
     }
+    // XP changed — invalidate dashboard so it refreshes next visit.
+    cacheInvalidate("dashboard");
     if (next) {
       celebrateXp({ amount: t.xp_reward, origin: btnEl, message: `Quest complete! +${t.xp_reward} XP` });
       const row = (btnEl as HTMLElement | null)?.closest("li");
@@ -90,7 +96,11 @@ function TasksPage() {
   };
 
   const remove = async (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
+    setTasks((prev) => {
+      const upd = prev.filter((t) => t.id !== id);
+      cacheSet("tasks", upd);
+      return upd;
+    });
     const { error } = await supabase.from("tasks").delete().eq("id", id);
     if (error) { toast.error(error.message); load(); }
   };
