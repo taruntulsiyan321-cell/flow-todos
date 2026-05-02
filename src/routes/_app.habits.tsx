@@ -83,22 +83,31 @@ function HabitsPage() {
 
   useEffect(() => { load(); }, []);
 
+  const persistCache = (h: Habit[], done: Set<string>, s: Record<string, number>) => {
+    cacheSet<HabitsCache>("habits", { habits: h, doneToday: [...done], streaks: s, day: today });
+  };
+
   const toggleCheckin = async (habit: Habit, btnEl?: Element | null) => {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
     const isDone = doneToday.has(habit.id);
     if (isDone) {
-      // Optimistic
       const next = new Set(doneToday); next.delete(habit.id); setDoneToday(next);
+      const newStreaks = { ...streaks, [habit.id]: Math.max(0, (streaks[habit.id] ?? 1) - 1) };
+      setStreaks(newStreaks);
+      persistCache(habits, next, newStreaks);
       const { error } = await supabase.from("habit_checkins").delete().eq("habit_id", habit.id).eq("completed_on", today);
       if (error) {
         const revert = new Set(next); revert.add(habit.id); setDoneToday(revert);
         return toast.error(error.message);
       }
       deductXp({ amount: habit.xp_reward, origin: btnEl, message: `−${habit.xp_reward} XP removed` });
-      load();
+      cacheInvalidate("dashboard");
     } else {
       const next = new Set(doneToday); next.add(habit.id); setDoneToday(next);
+      const newStreaks = { ...streaks, [habit.id]: (streaks[habit.id] ?? 0) + 1 };
+      setStreaks(newStreaks);
+      persistCache(habits, next, newStreaks);
       const { error } = await supabase.from("habit_checkins").insert({
         habit_id: habit.id,
         user_id: u.user.id,
@@ -109,20 +118,21 @@ function HabitsPage() {
         return toast.error(error.message);
       }
       celebrateXp({ amount: habit.xp_reward, origin: btnEl, message: `+${habit.xp_reward} XP earned` });
-      // Brief celebrate class on the row
       const row = (btnEl as HTMLElement | null)?.closest("li");
       if (row) {
         row.classList.add("animate-celebrate");
         setTimeout(() => row.classList.remove("animate-celebrate"), 950);
       }
-      load();
+      cacheInvalidate("dashboard");
     }
   };
 
   const deleteHabit = async (id: string) => {
     const { error } = await supabase.from("habits").update({ archived: true }).eq("id", id);
     if (error) return toast.error(error.message);
-    setHabits(habits.filter((h) => h.id !== id));
+    const next = habits.filter((h) => h.id !== id);
+    setHabits(next);
+    persistCache(next, doneToday, streaks);
   };
 
   return (
