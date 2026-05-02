@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { celebrateXp, deductXp } from "@/lib/feedback";
 import { HabitHeatmap } from "@/components/HabitHeatmap";
+import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
 
 export const Route = createFileRoute("/_app/habits")({
   head: () => ({ meta: [{ title: "Habits — Forge" }] }),
@@ -28,47 +29,55 @@ const habitSchema = z.object({
   description: z.string().trim().max(200).optional(),
 });
 
+type HabitsCache = { habits: Habit[]; doneToday: string[]; streaks: Record<string, number>; day: string };
+
 function HabitsPage() {
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [doneToday, setDoneToday] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
-  const [showAdd, setShowAdd] = useState(false);
-  const [streaks, setStreaks] = useState<Record<string, number>>({});
-
   const today = new Date().toISOString().slice(0, 10);
+  const cached = cacheGet<HabitsCache>("habits");
+  const useCache = cached && cached.day === today;
 
-  const load = async () => {
-    setLoading(true);
-    const [habitsRes, checkinsRes, allCheckinsRes] = await Promise.all([
-      supabase.from("habits").select("id,name,description,color,xp_reward").eq("archived", false).order("created_at", { ascending: true }),
-      supabase.from("habit_checkins").select("habit_id").eq("completed_on", today),
-      supabase.from("habit_checkins").select("habit_id,completed_on").order("completed_on", { ascending: false }).limit(500),
-    ]);
-    if (habitsRes.error) toast.error(habitsRes.error.message);
-    setHabits(habitsRes.data ?? []);
-    setDoneToday(new Set((checkinsRes.data ?? []).map((c) => c.habit_id)));
+  const [habits, setHabits] = useState<Habit[]>(useCache ? cached!.habits : []);
+  const [doneToday, setDoneToday] = useState<Set<string>>(
+    useCache ? new Set(cached!.doneToday) : new Set(),
+  );
+  const [loading, setLoading] = useState(!useCache);
+  const [showAdd, setShowAdd] = useState(false);
+  const [streaks, setStreaks] = useState<Record<string, number>>(
+    useCache ? cached!.streaks : {},
+  );
 
-    // compute streak per habit
+  const recomputeStreaks = (rows: { habit_id: string; completed_on: string }[]) => {
     const byHabit: Record<string, string[]> = {};
-    for (const c of allCheckinsRes.data ?? []) {
-      (byHabit[c.habit_id] ??= []).push(c.completed_on);
-    }
+    for (const c of rows) (byHabit[c.habit_id] ??= []).push(c.completed_on);
     const streakMap: Record<string, number> = {};
     for (const [hid, dates] of Object.entries(byHabit)) {
       const set = new Set(dates);
       let streak = 0;
       const cur = new Date();
-      // if not done today, start from yesterday
-      if (!set.has(cur.toISOString().slice(0, 10))) {
-        cur.setDate(cur.getDate() - 1);
-      }
+      if (!set.has(cur.toISOString().slice(0, 10))) cur.setDate(cur.getDate() - 1);
       while (set.has(cur.toISOString().slice(0, 10))) {
         streak++;
         cur.setDate(cur.getDate() - 1);
       }
       streakMap[hid] = streak;
     }
+    return streakMap;
+  };
+
+  const load = async () => {
+    const [habitsRes, checkinsRes, allCheckinsRes] = await Promise.all([
+      supabase.from("habits").select("id,name,description,color,xp_reward").eq("archived", false).order("created_at", { ascending: true }),
+      supabase.from("habit_checkins").select("habit_id").eq("completed_on", today),
+      supabase.from("habit_checkins").select("habit_id,completed_on").order("completed_on", { ascending: false }).limit(500),
+    ]);
+    if (habitsRes.error) toast.error(habitsRes.error.message);
+    const nextHabits = habitsRes.data ?? [];
+    const nextDone = (checkinsRes.data ?? []).map((c) => c.habit_id);
+    const streakMap = recomputeStreaks(allCheckinsRes.data ?? []);
+    setHabits(nextHabits);
+    setDoneToday(new Set(nextDone));
     setStreaks(streakMap);
+    cacheSet<HabitsCache>("habits", { habits: nextHabits, doneToday: nextDone, streaks: streakMap, day: today });
     setLoading(false);
   };
 
