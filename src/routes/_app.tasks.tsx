@@ -6,6 +6,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { celebrateXp, deductXp } from "@/lib/feedback";
+import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
 
 export const Route = createFileRoute("/_app/tasks")({
   head: () => ({ meta: [{ title: "Tasks — Forge" }] }),
@@ -44,23 +45,27 @@ const taskSchema = z.object({
 });
 
 function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = cacheGet<Task[]>("tasks");
+  const [tasks, setTasks] = useState<Task[]>(cached ?? []);
+  const [loading, setLoading] = useState(!cached);
   const [showAdd, setShowAdd] = useState(false);
   const [filter, setFilter] = useState<"all" | Task["category"]>("all");
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (showSpinner = false) => {
+    if (showSpinner) setLoading(true);
     const { data, error } = await supabase
       .from("tasks")
       .select("id,title,notes,category,priority,due_date,completed,xp_reward")
       .order("completed", { ascending: true })
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
-    setTasks((data ?? []) as Task[]);
+    const next = (data ?? []) as Task[];
+    setTasks(next);
+    cacheSet("tasks", next);
     setLoading(false);
   };
 
+  // Show cached data instantly, refresh in background.
   useEffect(() => { load(); }, []);
 
   const toggle = async (t: Task, btnEl?: Element | null) => {
