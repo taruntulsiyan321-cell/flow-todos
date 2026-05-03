@@ -19,7 +19,6 @@ type Challenge = {
   goal_per_period: number;
   goal_unit: string;
   is_public: boolean;
-  invite_code: string;
   max_participants: number | null;
   participant_count: number;
   created_by: string;
