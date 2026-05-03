@@ -858,6 +858,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_challenge_invite_code: {
+        Args: { p_challenge: string }
+        Returns: string
+      }
+      get_community_invite_code: {
+        Args: { p_community: string }
+        Returns: string
+      }
       get_public_profiles: {
         Args: { p_ids: string[] }
         Returns: {
