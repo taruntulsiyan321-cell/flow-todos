@@ -51,6 +51,7 @@ function ChallengeDetail() {
   const [amount, setAmount] = useState(1);
   const [note, setNote] = useState("");
   const [copied, setCopied] = useState(false);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
 
   useEffect(() => {
     void load();
@@ -62,10 +63,17 @@ function ChallengeDetail() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { navigate({ to: "/auth", search: { mode: "signin" } }); return; }
     setMe(user.id);
-    const { data: ch, error } = await supabase.from("challenges").select("*").eq("id", id).maybeSingle();
+    const COLS = "id,created_by,name,description,start_date,end_date,cadence,goal_per_period,goal_unit,is_public,max_participants,participant_count";
+    const { data: ch, error } = await supabase.from("challenges").select(COLS).eq("id", id).maybeSingle();
     if (error || !ch) { toast.error("Challenge not found or private"); navigate({ to: "/challenges" }); return; }
-    setC(ch as Challenge);
-    setAmount((ch as Challenge).goal_per_period);
+    setC(ch as unknown as Challenge);
+    setAmount((ch as unknown as Challenge).goal_per_period);
+    if ((ch as { created_by: string }).created_by === user.id) {
+      const { data: code } = await supabase.rpc("get_challenge_invite_code", { p_challenge: id });
+      setInviteCode((code as string) ?? null);
+    } else {
+      setInviteCode(null);
+    }
 
     const [{ data: lb }, { data: mine }, { data: part }] = await Promise.all([
       supabase.rpc("challenge_leaderboard", { p_challenge: id }),
