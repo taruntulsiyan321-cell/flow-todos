@@ -75,19 +75,12 @@ function CommunitiesPage() {
       if (!user) throw new Error("Not signed in");
 
       const { data: c, error: e1 } = await supabase
-        .from("communities")
-        .select("id, slug")
-        .eq("invite_code", code)
+        .rpc("join_community_by_code", { p_code: code })
         .maybeSingle();
       if (e1) throw e1;
       if (!c) throw new Error("Invalid invite code");
-
-      const { error: e2 } = await supabase
-        .from("community_members")
-        .insert({ community_id: c.id, user_id: user.id })
-        .select()
-        .maybeSingle();
-      // duplicate is fine — they're already a member
+      // already inserted by RPC
+      const _unused = null;
       if (e2 && !String(e2.message).includes("duplicate")) throw e2;
 
       toast.success("Joined!");
