@@ -115,6 +115,12 @@ function CommunitiesPage() {
         </div>
         <div className="flex items-center gap-2">
           <Link
+            to="/challenges"
+            className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:text-primary"
+          >
+            🏆 Challenges
+          </Link>
+          <Link
             to="/partners"
             className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:text-primary"
           >
