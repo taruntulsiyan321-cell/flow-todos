@@ -21,8 +21,11 @@ import { Route as AppHabitsRouteImport } from './routes/_app.habits'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
 import { Route as AppCommunitiesIndexRouteImport } from './routes/_app.communities.index'
+import { Route as AppChallengesIndexRouteImport } from './routes/_app.challenges.index'
 import { Route as AppCommunitiesNewRouteImport } from './routes/_app.communities.new'
 import { Route as AppCommunitiesSlugRouteImport } from './routes/_app.communities.$slug'
+import { Route as AppChallengesNewRouteImport } from './routes/_app.challenges.new'
+import { Route as AppChallengesIdRouteImport } from './routes/_app.challenges.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -83,6 +86,11 @@ const AppCommunitiesIndexRoute = AppCommunitiesIndexRouteImport.update({
   path: '/communities/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppChallengesIndexRoute = AppChallengesIndexRouteImport.update({
+  id: '/challenges/',
+  path: '/challenges/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCommunitiesNewRoute = AppCommunitiesNewRouteImport.update({
   id: '/communities/new',
   path: '/communities/new',
@@ -91,6 +99,16 @@ const AppCommunitiesNewRoute = AppCommunitiesNewRouteImport.update({
 const AppCommunitiesSlugRoute = AppCommunitiesSlugRouteImport.update({
   id: '/communities/$slug',
   path: '/communities/$slug',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChallengesNewRoute = AppChallengesNewRouteImport.update({
+  id: '/challenges/new',
+  path: '/challenges/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChallengesIdRoute = AppChallengesIdRouteImport.update({
+  id: '/challenges/$id',
+  path: '/challenges/$id',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -105,8 +123,11 @@ export interface FileRoutesByFullPath {
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/tasks': typeof AppTasksRoute
+  '/challenges/$id': typeof AppChallengesIdRoute
+  '/challenges/new': typeof AppChallengesNewRoute
   '/communities/$slug': typeof AppCommunitiesSlugRoute
   '/communities/new': typeof AppCommunitiesNewRoute
+  '/challenges/': typeof AppChallengesIndexRoute
   '/communities/': typeof AppCommunitiesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -120,8 +141,11 @@ export interface FileRoutesByTo {
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/tasks': typeof AppTasksRoute
+  '/challenges/$id': typeof AppChallengesIdRoute
+  '/challenges/new': typeof AppChallengesNewRoute
   '/communities/$slug': typeof AppCommunitiesSlugRoute
   '/communities/new': typeof AppCommunitiesNewRoute
+  '/challenges': typeof AppChallengesIndexRoute
   '/communities': typeof AppCommunitiesIndexRoute
 }
 export interface FileRoutesById {
@@ -137,8 +161,11 @@ export interface FileRoutesById {
   '/_app/planner': typeof AppPlannerRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/tasks': typeof AppTasksRoute
+  '/_app/challenges/$id': typeof AppChallengesIdRoute
+  '/_app/challenges/new': typeof AppChallengesNewRoute
   '/_app/communities/$slug': typeof AppCommunitiesSlugRoute
   '/_app/communities/new': typeof AppCommunitiesNewRoute
+  '/_app/challenges/': typeof AppChallengesIndexRoute
   '/_app/communities/': typeof AppCommunitiesIndexRoute
 }
 export interface FileRouteTypes {
@@ -154,8 +181,11 @@ export interface FileRouteTypes {
     | '/planner'
     | '/profile'
     | '/tasks'
+    | '/challenges/$id'
+    | '/challenges/new'
     | '/communities/$slug'
     | '/communities/new'
+    | '/challenges/'
     | '/communities/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -169,8 +199,11 @@ export interface FileRouteTypes {
     | '/planner'
     | '/profile'
     | '/tasks'
+    | '/challenges/$id'
+    | '/challenges/new'
     | '/communities/$slug'
     | '/communities/new'
+    | '/challenges'
     | '/communities'
   id:
     | '__root__'
@@ -185,8 +218,11 @@ export interface FileRouteTypes {
     | '/_app/planner'
     | '/_app/profile'
     | '/_app/tasks'
+    | '/_app/challenges/$id'
+    | '/_app/challenges/new'
     | '/_app/communities/$slug'
     | '/_app/communities/new'
+    | '/_app/challenges/'
     | '/_app/communities/'
   fileRoutesById: FileRoutesById
 }
@@ -282,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCommunitiesIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/challenges/': {
+      id: '/_app/challenges/'
+      path: '/challenges'
+      fullPath: '/challenges/'
+      preLoaderRoute: typeof AppChallengesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/communities/new': {
       id: '/_app/communities/new'
       path: '/communities/new'
@@ -296,6 +339,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCommunitiesSlugRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/challenges/new': {
+      id: '/_app/challenges/new'
+      path: '/challenges/new'
+      fullPath: '/challenges/new'
+      preLoaderRoute: typeof AppChallengesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/challenges/$id': {
+      id: '/_app/challenges/$id'
+      path: '/challenges/$id'
+      fullPath: '/challenges/$id'
+      preLoaderRoute: typeof AppChallengesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -308,8 +365,11 @@ interface AppRouteChildren {
   AppPlannerRoute: typeof AppPlannerRoute
   AppProfileRoute: typeof AppProfileRoute
   AppTasksRoute: typeof AppTasksRoute
+  AppChallengesIdRoute: typeof AppChallengesIdRoute
+  AppChallengesNewRoute: typeof AppChallengesNewRoute
   AppCommunitiesSlugRoute: typeof AppCommunitiesSlugRoute
   AppCommunitiesNewRoute: typeof AppCommunitiesNewRoute
+  AppChallengesIndexRoute: typeof AppChallengesIndexRoute
   AppCommunitiesIndexRoute: typeof AppCommunitiesIndexRoute
 }
 
@@ -322,8 +382,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppPlannerRoute: AppPlannerRoute,
   AppProfileRoute: AppProfileRoute,
   AppTasksRoute: AppTasksRoute,
+  AppChallengesIdRoute: AppChallengesIdRoute,
+  AppChallengesNewRoute: AppChallengesNewRoute,
   AppCommunitiesSlugRoute: AppCommunitiesSlugRoute,
   AppCommunitiesNewRoute: AppCommunitiesNewRoute,
+  AppChallengesIndexRoute: AppChallengesIndexRoute,
   AppCommunitiesIndexRoute: AppCommunitiesIndexRoute,
 }
 
