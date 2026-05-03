@@ -103,7 +103,7 @@ function CommunityDetail() {
 
     const { data: c } = await supabase
       .from("communities")
-      .select("*")
+      .select("id, name, slug, description, category, is_private, member_count, banner_url, created_by")
       .eq("slug", slug)
       .maybeSingle();
 
@@ -112,7 +112,9 @@ function CommunityDetail() {
       navigate({ to: "/communities" });
       return;
     }
-    setCommunity(c as Community);
+    // Fetch invite code separately (RLS-protected to creator/admin only)
+    const { data: codeData } = await supabase.rpc("get_community_invite_code", { p_community: (c as { id: string }).id });
+    setCommunity({ ...(c as object), invite_code: (codeData as string) ?? "" } as Community);
 
     const { data: mem } = await supabase
       .from("community_members")

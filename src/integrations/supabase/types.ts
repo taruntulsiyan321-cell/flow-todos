@@ -858,6 +858,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_challenge_invite_code: {
+        Args: { p_challenge: string }
+        Returns: string
+      }
+      get_community_invite_code: {
+        Args: { p_community: string }
+        Returns: string
+      }
       get_public_profiles: {
         Args: { p_ids: string[] }
         Returns: {
@@ -881,6 +889,13 @@ export type Database = {
         Returns: boolean
       }
       join_challenge_by_code: { Args: { p_code: string }; Returns: string }
+      join_community_by_code: {
+        Args: { p_code: string }
+        Returns: {
+          id: string
+          slug: string
+        }[]
+      }
       recompute_user_stats: { Args: { p_user: string }; Returns: undefined }
       search_users: {
         Args: { p_query: string }

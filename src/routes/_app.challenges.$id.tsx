@@ -23,7 +23,6 @@ type Challenge = {
   goal_per_period: number;
   goal_unit: string;
   is_public: boolean;
-  invite_code: string;
   max_participants: number | null;
   participant_count: number;
 };
@@ -52,6 +51,7 @@ function ChallengeDetail() {
   const [amount, setAmount] = useState(1);
   const [note, setNote] = useState("");
   const [copied, setCopied] = useState(false);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
 
   useEffect(() => {
     void load();
@@ -63,10 +63,17 @@ function ChallengeDetail() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { navigate({ to: "/auth", search: { mode: "signin" } }); return; }
     setMe(user.id);
-    const { data: ch, error } = await supabase.from("challenges").select("*").eq("id", id).maybeSingle();
+    const COLS = "id,created_by,name,description,start_date,end_date,cadence,goal_per_period,goal_unit,is_public,max_participants,participant_count";
+    const { data: ch, error } = await supabase.from("challenges").select(COLS).eq("id", id).maybeSingle();
     if (error || !ch) { toast.error("Challenge not found or private"); navigate({ to: "/challenges" }); return; }
-    setC(ch as Challenge);
-    setAmount((ch as Challenge).goal_per_period);
+    setC(ch as unknown as Challenge);
+    setAmount((ch as unknown as Challenge).goal_per_period);
+    if ((ch as { created_by: string }).created_by === user.id) {
+      const { data: code } = await supabase.rpc("get_challenge_invite_code", { p_challenge: id });
+      setInviteCode((code as string) ?? null);
+    } else {
+      setInviteCode(null);
+    }
 
     const [{ data: lb }, { data: mine }, { data: part }] = await Promise.all([
       supabase.rpc("challenge_leaderboard", { p_challenge: id }),
@@ -129,8 +136,8 @@ function ChallengeDetail() {
   }
 
   function copyCode() {
-    if (!c) return;
-    navigator.clipboard.writeText(c.invite_code);
+    if (!inviteCode) return;
+    navigator.clipboard.writeText(inviteCode);
     setCopied(true);
     toast.success("Invite code copied");
     setTimeout(() => setCopied(false), 1800);
@@ -186,16 +193,18 @@ function ChallengeDetail() {
           <Stat icon={<Target className="h-3.5 w-3.5" />} label="Goal" value={`${c.goal_per_period}/${c.cadence === "daily" ? "d" : "w"}`} />
         </div>
 
-        {/* Invite */}
-        <div className="mt-4 flex items-center justify-between rounded-lg border border-border bg-background/40 px-3 py-2">
-          <div className="text-xs">
-            <div className="text-muted-foreground">Invite code</div>
-            <div className="font-mono text-base tracking-widest text-primary">{c.invite_code}</div>
+        {/* Invite (creator only) */}
+        {isCreator && inviteCode && (
+          <div className="mt-4 flex items-center justify-between rounded-lg border border-border bg-background/40 px-3 py-2">
+            <div className="text-xs">
+              <div className="text-muted-foreground">Invite code (share to invite)</div>
+              <div className="font-mono text-base tracking-widest text-primary">{inviteCode}</div>
+            </div>
+            <button onClick={copyCode} className="rounded-md p-2 hover:bg-card/60 active:scale-95 transition">
+              {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+            </button>
           </div>
-          <button onClick={copyCode} className="rounded-md p-2 hover:bg-card/60 active:scale-95 transition">
-            {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
-          </button>
-        </div>
+        )}
 
         {/* Action */}
         <div className="mt-4">
