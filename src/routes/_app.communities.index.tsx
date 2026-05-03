@@ -79,9 +79,7 @@ function CommunitiesPage() {
         .maybeSingle();
       if (e1) throw e1;
       if (!c) throw new Error("Invalid invite code");
-      // already inserted by RPC
-      const _unused = null;
-      if (e2 && !String(e2.message).includes("duplicate")) throw e2;
+      // join handled inside RPC
 
       toast.success("Joined!");
       navigate({ to: "/communities/$slug", params: { slug: c.slug } });
