@@ -46,17 +46,18 @@ function ChallengesIndex() {
       navigate({ to: "/auth", search: { mode: "signin" } });
       return;
     }
+    const COLS = "id,created_by,name,description,start_date,end_date,cadence,goal_per_period,goal_unit,is_public,max_participants,participant_count,created_at,updated_at";
     const [pub, joined, created] = await Promise.all([
-      supabase.from("challenges").select("*").eq("is_public", true).order("start_date", { ascending: false }).limit(50),
+      supabase.from("challenges").select(COLS).eq("is_public", true).order("start_date", { ascending: false }).limit(50),
       supabase.from("challenge_participants").select("challenge_id").eq("user_id", user.id),
-      supabase.from("challenges").select("*").eq("created_by", user.id),
+      supabase.from("challenges").select(COLS).eq("created_by", user.id),
     ]);
-    setList((pub.data ?? []) as Challenge[]);
+    setList((pub.data ?? []) as unknown as Challenge[]);
     const joinedIds = new Set((joined.data ?? []).map((r: { challenge_id: string }) => r.challenge_id));
     let joinedRows: Challenge[] = [];
     if (joinedIds.size) {
-      const { data } = await supabase.from("challenges").select("*").in("id", Array.from(joinedIds));
-      joinedRows = (data ?? []) as Challenge[];
+      const { data } = await supabase.from("challenges").select(COLS).in("id", Array.from(joinedIds));
+      joinedRows = (data ?? []) as unknown as Challenge[];
     }
     const map = new Map<string, Challenge>();
     [...(created.data ?? []) as Challenge[], ...joinedRows].forEach((c) => map.set(c.id, c));
