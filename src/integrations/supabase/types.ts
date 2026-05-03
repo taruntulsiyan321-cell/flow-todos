@@ -35,6 +35,136 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_participants: {
+        Row: {
+          challenge_id: string
+          current_streak: number
+          joined_at: string
+          last_log_date: string | null
+          longest_streak: number
+          total_progress: number
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          current_streak?: number
+          joined_at?: string
+          last_log_date?: string | null
+          longest_streak?: number
+          total_progress?: number
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          current_streak?: number
+          joined_at?: string
+          last_log_date?: string | null
+          longest_streak?: number
+          total_progress?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_participants_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_progress_logs: {
+        Row: {
+          amount: number
+          challenge_id: string
+          created_at: string
+          id: string
+          log_date: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          challenge_id: string
+          created_at?: string
+          id?: string
+          log_date?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          log_date?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_progress_logs_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenges: {
+        Row: {
+          cadence: string
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string
+          goal_per_period: number
+          goal_unit: string
+          id: string
+          invite_code: string
+          is_public: boolean
+          max_participants: number | null
+          name: string
+          participant_count: number
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          cadence?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date: string
+          goal_per_period?: number
+          goal_unit?: string
+          id?: string
+          invite_code?: string
+          is_public?: boolean
+          max_participants?: number | null
+          name: string
+          participant_count?: number
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          cadence?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string
+          goal_per_period?: number
+          goal_unit?: string
+          id?: string
+          invite_code?: string
+          is_public?: boolean
+          max_participants?: number | null
+          name?: string
+          participant_count?: number
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       communities: {
         Row: {
           banner_url: string | null
@@ -717,6 +847,17 @@ export type Database = {
         Returns: undefined
       }
       calc_level: { Args: { p_xp: number }; Returns: number }
+      challenge_leaderboard: {
+        Args: { p_challenge: string }
+        Returns: {
+          current_streak: number
+          display_name: string
+          last_log_date: string
+          longest_streak: number
+          total_progress: number
+          user_id: string
+        }[]
+      }
       get_public_profiles: {
         Args: { p_ids: string[] }
         Returns: {
@@ -727,6 +868,10 @@ export type Database = {
           xp: number
         }[]
       }
+      is_challenge_participant: {
+        Args: { _challenge: string; _user: string }
+        Returns: boolean
+      }
       is_community_admin: {
         Args: { _community: string; _user: string }
         Returns: boolean
@@ -735,6 +880,7 @@ export type Database = {
         Args: { _community: string; _user: string }
         Returns: boolean
       }
+      join_challenge_by_code: { Args: { p_code: string }; Returns: string }
       recompute_user_stats: { Args: { p_user: string }; Returns: undefined }
       search_users: {
         Args: { p_query: string }
