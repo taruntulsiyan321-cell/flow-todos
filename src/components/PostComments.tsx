@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Heart, Loader2, MessageCircle, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { censorForDisplay, scan } from "@/lib/moderation";
 
 const tap = () => {
   try {
