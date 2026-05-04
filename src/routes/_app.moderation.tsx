@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Plus, ShieldAlert, Trash2, UserX } from "lucide-react";
+import { Plus, ShieldAlert, Trash2, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { loadBlockedWords } from "@/lib/moderation";
