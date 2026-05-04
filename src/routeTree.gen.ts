@@ -16,6 +16,7 @@ import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppPlannerRouteImport } from './routes/_app.planner'
 import { Route as AppPartnersRouteImport } from './routes/_app.partners'
+import { Route as AppModerationRouteImport } from './routes/_app.moderation'
 import { Route as AppJournalRouteImport } from './routes/_app.journal'
 import { Route as AppHabitsRouteImport } from './routes/_app.habits'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
@@ -59,6 +60,11 @@ const AppPlannerRoute = AppPlannerRouteImport.update({
 const AppPartnersRoute = AppPartnersRouteImport.update({
   id: '/partners',
   path: '/partners',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppModerationRoute = AppModerationRouteImport.update({
+  id: '/moderation',
+  path: '/moderation',
   getParentRoute: () => AppRoute,
 } as any)
 const AppJournalRoute = AppJournalRouteImport.update({
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/habits': typeof AppHabitsRoute
   '/journal': typeof AppJournalRoute
+  '/moderation': typeof AppModerationRoute
   '/partners': typeof AppPartnersRoute
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/habits': typeof AppHabitsRoute
   '/journal': typeof AppJournalRoute
+  '/moderation': typeof AppModerationRoute
   '/partners': typeof AppPartnersRoute
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/habits': typeof AppHabitsRoute
   '/_app/journal': typeof AppJournalRoute
+  '/_app/moderation': typeof AppModerationRoute
   '/_app/partners': typeof AppPartnersRoute
   '/_app/planner': typeof AppPlannerRoute
   '/_app/profile': typeof AppProfileRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/habits'
     | '/journal'
+    | '/moderation'
     | '/partners'
     | '/planner'
     | '/profile'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/habits'
     | '/journal'
+    | '/moderation'
     | '/partners'
     | '/planner'
     | '/profile'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/habits'
     | '/_app/journal'
+    | '/_app/moderation'
     | '/_app/partners'
     | '/_app/planner'
     | '/_app/profile'
@@ -281,6 +293,13 @@ declare module '@tanstack/react-router' {
       path: '/partners'
       fullPath: '/partners'
       preLoaderRoute: typeof AppPartnersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/moderation': {
+      id: '/_app/moderation'
+      path: '/moderation'
+      fullPath: '/moderation'
+      preLoaderRoute: typeof AppModerationRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/journal': {
@@ -361,6 +380,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppHabitsRoute: typeof AppHabitsRoute
   AppJournalRoute: typeof AppJournalRoute
+  AppModerationRoute: typeof AppModerationRoute
   AppPartnersRoute: typeof AppPartnersRoute
   AppPlannerRoute: typeof AppPlannerRoute
   AppProfileRoute: typeof AppProfileRoute
@@ -378,6 +398,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppHabitsRoute: AppHabitsRoute,
   AppJournalRoute: AppJournalRoute,
+  AppModerationRoute: AppModerationRoute,
   AppPartnersRoute: AppPartnersRoute,
   AppPlannerRoute: AppPlannerRoute,
   AppProfileRoute: AppProfileRoute,

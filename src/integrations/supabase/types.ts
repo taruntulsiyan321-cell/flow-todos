@@ -344,6 +344,33 @@ export type Database = {
           },
         ]
       }
+      community_mutes: {
+        Row: {
+          community_id: string
+          created_at: string
+          created_by: string
+          muted_until: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          community_id: string
+          created_at?: string
+          created_by: string
+          muted_until: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          community_id?: string
+          created_at?: string
+          created_by?: string
+          muted_until?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_post_comment_likes: {
         Row: {
           comment_id: string
@@ -598,6 +625,66 @@ export type Database = {
         }
         Relationships: []
       }
+      moderation_blocked_words: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          pattern: string
+          severity: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          pattern: string
+          severity?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          pattern?: string
+          severity?: string
+        }
+        Relationships: []
+      }
+      moderation_log: {
+        Row: {
+          cleaned_text: string | null
+          community_id: string | null
+          created_at: string
+          id: string
+          matched_terms: string[]
+          original_text: string
+          severity: string
+          surface: string
+          user_id: string
+        }
+        Insert: {
+          cleaned_text?: string | null
+          community_id?: string | null
+          created_at?: string
+          id?: string
+          matched_terms?: string[]
+          original_text: string
+          severity: string
+          surface: string
+          user_id: string
+        }
+        Update: {
+          cleaned_text?: string | null
+          community_id?: string | null
+          created_at?: string
+          id?: string
+          matched_terms?: string[]
+          original_text?: string
+          severity?: string
+          surface?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       partner_invites: {
         Row: {
           created_at: string
@@ -694,6 +781,21 @@ export type Database = {
           updated_at?: string
           user_id?: string
           xp_reward?: number
+        }
+        Relationships: []
+      }
+      platform_admins: {
+        Row: {
+          granted_at: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -888,6 +990,7 @@ export type Database = {
         Args: { _community: string; _user: string }
         Returns: boolean
       }
+      is_platform_admin: { Args: { _user: string }; Returns: boolean }
       join_challenge_by_code: { Args: { p_code: string }; Returns: string }
       join_community_by_code: {
         Args: { p_code: string }
@@ -896,6 +999,26 @@ export type Database = {
           slug: string
         }[]
       }
+      moderation_normalize: { Args: { p: string }; Returns: string }
+      moderation_repeat_offenders: {
+        Args: { p_days?: number }
+        Returns: {
+          blocked_count: number
+          censored_count: number
+          display_name: string
+          last_at: string
+          user_id: string
+        }[]
+      }
+      moderation_scan: {
+        Args: { p: string }
+        Returns: {
+          cleaned: string
+          matched: string[]
+          severity: string
+        }[]
+      }
+      moderation_word_regex: { Args: { p_word: string }; Returns: string }
       recompute_user_stats: { Args: { p_user: string }; Returns: undefined }
       search_users: {
         Args: { p_query: string }

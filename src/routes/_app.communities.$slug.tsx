@@ -25,6 +25,7 @@ import { rankFor } from "@/lib/xp";
 import { PostComments } from "@/components/PostComments";
 import { CommunityChat } from "@/components/CommunityChat";
 import { RankTrack } from "@/components/RankTrack";
+import { censorForDisplay, scan } from "@/lib/moderation";
 
 export const Route = createFileRoute("/_app/communities/$slug")({
   head: ({ params }) => ({ meta: [{ title: `${params.slug} — Forge` }] }),
@@ -373,6 +374,11 @@ function FeedTab({ communityId, me }: { communityId: string; me: string }) {
       toast.error("Posts must be under 2000 characters");
       return;
     }
+    const r = await scan(text);
+    if (r.severity === "blocked") {
+      toast.error("Your message contains inappropriate language and cannot be posted.");
+      return;
+    }
     setPosting(true);
     try {
       const { error } = await supabase.from("community_posts").insert({
@@ -380,7 +386,14 @@ function FeedTab({ communityId, me }: { communityId: string; me: string }) {
         user_id: me,
         body: text,
       });
-      if (error) throw error;
+      if (error) {
+        if (/inappropriate|muted/i.test(error.message)) {
+          toast.error(error.message);
+          return;
+        }
+        throw error;
+      }
+      if (r.severity === "censored") toast.message("Some words were censored.");
       setBody("");
       await load();
     } catch (err) {
@@ -478,7 +491,7 @@ function FeedTab({ communityId, me }: { communityId: string; me: string }) {
                 })}
               </div>
             </div>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">{p.body}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">{censorForDisplay(p.body)}</p>
             <div className="mt-3 flex items-center gap-3">
               <button
                 onClick={() => toggleLike(p)}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Heart, Loader2, MessageCircle, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { censorForDisplay, scan } from "@/lib/moderation";
 
 const tap = () => {
   try {
@@ -103,6 +104,11 @@ export function PostComments({
     e.preventDefault();
     const text = body.trim();
     if (!text || text.length > 1000) return;
+    const r = await scan(text);
+    if (r.severity === "blocked") {
+      toast.error("Your message contains inappropriate language and cannot be posted.");
+      return;
+    }
     setPosting(true);
     try {
       const { error } = await supabase.from("community_post_comments").insert({
@@ -111,7 +117,14 @@ export function PostComments({
         user_id: me,
         body: text,
       });
-      if (error) throw error;
+      if (error) {
+        if (/inappropriate|muted/i.test(error.message)) {
+          toast.error(error.message);
+          return;
+        }
+        throw error;
+      }
+      if (r.severity === "censored") toast.message("Some words were censored.");
       setBody("");
       tap();
       await load();
@@ -187,7 +200,7 @@ export function PostComments({
                       })}
                     </span>
                   </div>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{c.body}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{censorForDisplay(c.body)}</p>
                   <div className="mt-1.5 flex items-center gap-3">
                     <button
                       onClick={() => toggleLike(c)}
