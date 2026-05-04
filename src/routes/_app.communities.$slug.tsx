@@ -25,6 +25,7 @@ import { rankFor } from "@/lib/xp";
 import { PostComments } from "@/components/PostComments";
 import { CommunityChat } from "@/components/CommunityChat";
 import { RankTrack } from "@/components/RankTrack";
+import { censorForDisplay, scan } from "@/lib/moderation";
 
 export const Route = createFileRoute("/_app/communities/$slug")({
   head: ({ params }) => ({ meta: [{ title: `${params.slug} — Forge` }] }),
