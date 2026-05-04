@@ -491,7 +491,7 @@ function FeedTab({ communityId, me }: { communityId: string; me: string }) {
                 })}
               </div>
             </div>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">{p.body}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">{censorForDisplay(p.body)}</p>
             <div className="mt-3 flex items-center gap-3">
               <button
                 onClick={() => toggleLike(p)}
