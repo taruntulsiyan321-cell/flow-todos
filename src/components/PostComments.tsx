@@ -104,6 +104,11 @@ export function PostComments({
     e.preventDefault();
     const text = body.trim();
     if (!text || text.length > 1000) return;
+    const r = await scan(text);
+    if (r.severity === "blocked") {
+      toast.error("Your message contains inappropriate language and cannot be posted.");
+      return;
+    }
     setPosting(true);
     try {
       const { error } = await supabase.from("community_post_comments").insert({
@@ -112,7 +117,14 @@ export function PostComments({
         user_id: me,
         body: text,
       });
-      if (error) throw error;
+      if (error) {
+        if (/inappropriate|muted/i.test(error.message)) {
+          toast.error(error.message);
+          return;
+        }
+        throw error;
+      }
+      if (r.severity === "censored") toast.message("Some words were censored.");
       setBody("");
       tap();
       await load();
