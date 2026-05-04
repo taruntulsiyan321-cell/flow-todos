@@ -286,5 +286,3 @@ function OffendersTab() {
   );
 }
 
-// Surface unused-import safety
-void Loader2;
