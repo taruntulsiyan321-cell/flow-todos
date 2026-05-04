@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { censorForDisplay, loadBlockedWords, scan } from "@/lib/moderation";
 
 type Msg = {
   id: string;
@@ -29,6 +30,7 @@ export function CommunityChat({ communityId, me }: { communityId: string; me: st
 
   useEffect(() => {
     let mounted = true;
+    void loadBlockedWords();
     void (async () => {
       setLoading(true);
       const { data } = await supabase
@@ -87,12 +89,33 @@ export function CommunityChat({ communityId, me }: { communityId: string; me: st
       toast.error("Message too long");
       return;
     }
+
+    // Client-side moderation pass — fast feedback before round-trip
+    const result = await scan(text);
+    if (result.severity === "blocked") {
+      toast.error("Your message contains inappropriate language and cannot be posted.", {
+        icon: <ShieldAlert className="h-4 w-4" />,
+      });
+      return;
+    }
+
     setSending(true);
     try {
       const { error } = await supabase
         .from("community_messages")
         .insert({ community_id: communityId, user_id: me, body: text });
-      if (error) throw error;
+      if (error) {
+        // Server-side trigger may still block (kept up to date in DB).
+        if (/inappropriate|muted/i.test(error.message)) {
+          toast.error(error.message);
+        } else {
+          throw error;
+        }
+        return;
+      }
+      if (result.severity === "censored") {
+        toast.message("Some words were censored.");
+      }
       setBody("");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't send");
@@ -120,6 +143,7 @@ export function CommunityChat({ communityId, me }: { communityId: string; me: st
         ) : (
           messages.map((m) => {
             const mine = m.user_id === me;
+            const safeBody = censorForDisplay(m.body);
             return (
               <div
                 key={m.id}
@@ -137,7 +161,7 @@ export function CommunityChat({ communityId, me }: { communityId: string; me: st
                       {m.display_name}
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                  <p className="whitespace-pre-wrap break-words">{safeBody}</p>
                   <div
                     className={`mt-0.5 text-right text-[10px] ${
                       mine ? "text-primary-foreground/70" : "text-muted-foreground"
