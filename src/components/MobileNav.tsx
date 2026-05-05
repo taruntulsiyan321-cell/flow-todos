@@ -41,7 +41,6 @@ export function MobileNav() {
             <Link
               key={to}
               to={to}
-              preload="intent"
               className={cn(
                 "relative flex flex-1 flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-all duration-200 active:scale-95",
                 active ? "text-primary" : "text-muted-foreground hover:text-foreground",
