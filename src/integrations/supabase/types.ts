@@ -968,6 +968,10 @@ export type Database = {
         Args: { p_community: string }
         Returns: string
       }
+      get_moderation_matched_terms: {
+        Args: { p_log_id: string }
+        Returns: string[]
+      }
       get_public_profiles: {
         Args: { p_ids: string[] }
         Returns: {
