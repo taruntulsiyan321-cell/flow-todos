@@ -960,6 +960,19 @@ export type Database = {
           user_id: string
         }[]
       }
+      community_moderation_log: {
+        Args: { p_community: string; p_limit?: number }
+        Returns: {
+          cleaned_text: string
+          community_id: string
+          created_at: string
+          id: string
+          original_text: string
+          severity: string
+          surface: string
+          user_id: string
+        }[]
+      }
       get_challenge_invite_code: {
         Args: { p_challenge: string }
         Returns: string
