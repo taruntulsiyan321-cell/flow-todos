@@ -1,28 +1,33 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type StatsPayload = {
-  productivity: number;
-  discipline: number;
-  consistency: number;
-  focus: number;
-  growth: number;
-  wellness: number;
-  bestDayName: string;
-  bestHour: number;
-  completionRate: number;
-  weekVsLastWeekPct: number;
-  monthVsLastMonthPct: number;
-  currentStreak: number;
-  longestStreak: number;
-  habitName: string | null;
-  weakHabitName: string | null;
-  pendingTasks: number;
-  overdueTasks: number;
-  avgMood: number | null;
-};
+const statsSchema = z.object({
+  productivity: z.number().min(0).max(100),
+  discipline: z.number().min(0).max(100),
+  consistency: z.number().min(0).max(100),
+  focus: z.number().min(0).max(100),
+  growth: z.number().min(0).max(100),
+  wellness: z.number().min(0).max(100),
+  bestDayName: z.string().max(20),
+  bestHour: z.number().int().min(-1).max(23),
+  completionRate: z.number().min(-1000).max(1000),
+  weekVsLastWeekPct: z.number().min(-10000).max(10000),
+  monthVsLastMonthPct: z.number().min(-10000).max(10000),
+  currentStreak: z.number().int().min(0).max(100000),
+  longestStreak: z.number().int().min(0).max(100000),
+  habitName: z.string().max(80).nullable(),
+  weakHabitName: z.string().max(80).nullable(),
+  pendingTasks: z.number().int().min(0).max(100000),
+  overdueTasks: z.number().int().min(0).max(100000),
+  avgMood: z.number().min(0).max(10).nullable(),
+});
+
+type StatsPayload = z.infer<typeof statsSchema>;
 
 export const generateAnalyticsInsights = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => data as StatsPayload)
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => statsSchema.parse(data))
   .handler(async ({ data }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) {
