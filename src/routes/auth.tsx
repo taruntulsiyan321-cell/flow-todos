@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Sparkles, Loader2, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +14,11 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   beforeLoad: async () => {
+    // Skip the session redirect when returning from OAuth —
+    // the URL hash will contain tokens that haven't been processed yet.
+    if (typeof window !== "undefined" && window.location.hash.includes("access_token")) {
+      return;
+    }
     const { data } = await supabase.auth.getSession();
     if (data.session) throw redirect({ to: "/dashboard" });
   },
@@ -40,6 +45,39 @@ function AuthPage() {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const isSignup = mode === "signup";
+
+  // Handle OAuth callback — when the OAuth broker redirects back with tokens
+  // in the URL hash (e.g. #access_token=...&refresh_token=...), extract them
+  // and establish the Supabase session before navigating to /dashboard.
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.includes("access_token")) return;
+
+    const params = new URLSearchParams(hash.substring(1));
+    const accessToken = params.get("access_token");
+    const refreshToken = params.get("refresh_token");
+
+    if (!accessToken || !refreshToken) return;
+
+    setLoading(true);
+    // Clear the hash so it doesn't get re-processed on re-renders
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+
+    supabase.auth
+      .setSession({ access_token: accessToken, refresh_token: refreshToken })
+      .then(({ error }) => {
+        if (error) {
+          toast.error(friendlyAuthError(error));
+          setLoading(false);
+        } else {
+          navigate({ to: "/dashboard" });
+        }
+      })
+      .catch((err) => {
+        toast.error(friendlyAuthError(err));
+        setLoading(false);
+      });
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +123,7 @@ function AuthPage() {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/dashboard`,
+        redirect_uri: `${window.location.origin}/auth`,
       });
       if (result.error) throw result.error;
       if (!result.redirected) navigate({ to: "/dashboard" });
