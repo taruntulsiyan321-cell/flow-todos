@@ -362,7 +362,7 @@ function SuggestedActionCard({ suggested }: { suggested: NonNullable<SuggestedAc
   );
 }
 
-function QuickLink({ to, icon, label, sub }: { to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities"; icon: React.ReactNode; label: string; sub: string }) {
+function QuickLink({ to, icon, label, sub }: { to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog"; icon: React.ReactNode; label: string; sub: string }) {
   return (
     <Link
       to={to}
