@@ -299,6 +299,7 @@ function Dashboard() {
         <QuickLink to="/journal" icon={<BookOpen className="h-5 w-5 text-success" />} label="Journal" sub="Reflect & earn" />
         <QuickLink to="/communities" icon={<Users className="h-5 w-5 text-primary" />} label="Crew" sub="Communities" />
         <QuickLink to="/analytics" icon={<BarChart3 className="h-5 w-5 text-primary" />} label="Stats" sub="Weekly insights" />
+        <QuickLink to="/timelog" icon={<Clock className="h-5 w-5 text-accent" />} label="Time Log" sub="What & when" />
       </div>
 
       {/* Smart nudges (with notification toggle) */}
