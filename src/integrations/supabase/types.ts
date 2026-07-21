@@ -883,6 +883,48 @@ export type Database = {
         }
         Relationships: []
       }
+      time_logs: {
+        Row: {
+          activity: string
+          category: string | null
+          created_at: string
+          duration_minutes: number | null
+          end_time: string | null
+          id: string
+          log_date: string
+          notes: string | null
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity: string
+          category?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          log_date?: string
+          notes?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity?: string
+          category?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          log_date?: string
+          notes?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       xp_ledger: {
         Row: {
           amount: number
