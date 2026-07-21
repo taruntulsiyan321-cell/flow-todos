@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppTimelogRouteImport } from './routes/_app.timelog'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppPlannerRouteImport } from './routes/_app.planner'
@@ -41,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppTimelogRoute = AppTimelogRouteImport.update({
+  id: '/timelog',
+  path: '/timelog',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppTasksRoute = AppTasksRouteImport.update({
   id: '/tasks',
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/tasks': typeof AppTasksRoute
+  '/timelog': typeof AppTimelogRoute
   '/challenges/$id': typeof AppChallengesIdRoute
   '/challenges/new': typeof AppChallengesNewRoute
   '/communities/$slug': typeof AppCommunitiesSlugRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/tasks': typeof AppTasksRoute
+  '/timelog': typeof AppTimelogRoute
   '/challenges/$id': typeof AppChallengesIdRoute
   '/challenges/new': typeof AppChallengesNewRoute
   '/communities/$slug': typeof AppCommunitiesSlugRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/_app/planner': typeof AppPlannerRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/tasks': typeof AppTasksRoute
+  '/_app/timelog': typeof AppTimelogRoute
   '/_app/challenges/$id': typeof AppChallengesIdRoute
   '/_app/challenges/new': typeof AppChallengesNewRoute
   '/_app/communities/$slug': typeof AppCommunitiesSlugRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/planner'
     | '/profile'
     | '/tasks'
+    | '/timelog'
     | '/challenges/$id'
     | '/challenges/new'
     | '/communities/$slug'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/planner'
     | '/profile'
     | '/tasks'
+    | '/timelog'
     | '/challenges/$id'
     | '/challenges/new'
     | '/communities/$slug'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/_app/planner'
     | '/_app/profile'
     | '/_app/tasks'
+    | '/_app/timelog'
     | '/_app/challenges/$id'
     | '/_app/challenges/new'
     | '/_app/communities/$slug'
@@ -266,6 +278,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/timelog': {
+      id: '/_app/timelog'
+      path: '/timelog'
+      fullPath: '/timelog'
+      preLoaderRoute: typeof AppTimelogRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/tasks': {
       id: '/_app/tasks'
@@ -385,6 +404,7 @@ interface AppRouteChildren {
   AppPlannerRoute: typeof AppPlannerRoute
   AppProfileRoute: typeof AppProfileRoute
   AppTasksRoute: typeof AppTasksRoute
+  AppTimelogRoute: typeof AppTimelogRoute
   AppChallengesIdRoute: typeof AppChallengesIdRoute
   AppChallengesNewRoute: typeof AppChallengesNewRoute
   AppCommunitiesSlugRoute: typeof AppCommunitiesSlugRoute
@@ -403,6 +423,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPlannerRoute: AppPlannerRoute,
   AppProfileRoute: AppProfileRoute,
   AppTasksRoute: AppTasksRoute,
+  AppTimelogRoute: AppTimelogRoute,
   AppChallengesIdRoute: AppChallengesIdRoute,
   AppChallengesNewRoute: AppChallengesNewRoute,
   AppCommunitiesSlugRoute: AppCommunitiesSlugRoute,
