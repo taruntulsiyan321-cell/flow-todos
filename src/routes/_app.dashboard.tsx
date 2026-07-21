@@ -8,6 +8,7 @@ import {
   Plus,
   BookOpen,
   BarChart3,
+  Clock,
   Target,
   ArrowRight,
   Users,
