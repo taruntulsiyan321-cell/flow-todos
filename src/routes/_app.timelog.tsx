@@ -135,10 +135,63 @@ function TimeLogPage() {
 
   const submitManual = async () => {
     const [hh, mm] = manualTime.split(":").map(Number);
-    if (Number.isNaN(hh) || Number.isNaN(mm)) return toast.error("Pick a time");
-    const d = new Date(date + "T00:00:00");
-    d.setHours(hh, mm, 0, 0);
-    await insertPoint(manualCat, d);
+    if (Number.isNaN(hh) || Number.isNaN(mm)) return toast.error("Pick a start time");
+    const start = new Date(date + "T00:00:00");
+    start.setHours(hh, mm, 0, 0);
+
+    // No end time → point log (existing behavior)
+    if (!manualEnd) {
+      const label = manualActivity.trim() || manualCat;
+      setSaving(manualCat);
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) { setSaving(null); return; }
+      const iso = start.toISOString();
+      const { error } = await supabase.from("time_logs").insert({
+        user_id: u.user.id,
+        activity: label,
+        category: manualCat,
+        log_date: iso.slice(0, 10),
+        start_time: iso,
+        end_time: iso,
+        duration_minutes: 0,
+        notes: null,
+      });
+      setSaving(null);
+      if (error) return toast.error(error.message);
+      toast.success(`${label} · ${fmtTime(iso)}`);
+      setManualActivity("");
+      if (iso.slice(0, 10) !== date) setDate(iso.slice(0, 10)); else void load();
+      return;
+    }
+
+    // With end time → range log
+    const [eh, em] = manualEnd.split(":").map(Number);
+    if (Number.isNaN(eh) || Number.isNaN(em)) return toast.error("Pick an end time");
+    const end = new Date(date + "T00:00:00");
+    end.setHours(eh, em, 0, 0);
+    if (end.getTime() <= start.getTime()) return toast.error("End must be after start");
+    const dur = Math.round((end.getTime() - start.getTime()) / 60000);
+    const label = manualActivity.trim() || manualCat;
+    setSaving(manualCat);
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) { setSaving(null); return; }
+    const startIso = start.toISOString();
+    const { error } = await supabase.from("time_logs").insert({
+      user_id: u.user.id,
+      activity: label,
+      category: manualCat,
+      log_date: startIso.slice(0, 10),
+      start_time: startIso,
+      end_time: end.toISOString(),
+      duration_minutes: dur,
+      notes: null,
+    });
+    setSaving(null);
+    if (error) return toast.error(error.message);
+    toast.success(`${label} · ${fmtDur(dur)}`);
+    setManualActivity("");
+    setManualEnd("");
+    if (startIso.slice(0, 10) !== date) setDate(startIso.slice(0, 10)); else void load();
   };
 
   const totalMin = useMemo(
