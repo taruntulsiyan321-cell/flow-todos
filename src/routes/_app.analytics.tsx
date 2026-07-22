@@ -5,7 +5,7 @@ import {
   CheckCircle2, Clock, Brain, Heart, Calendar, Download, Wand2, Award, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { generateAnalyticsInsights } from "@/server/analytics-insights.functions";
+import { generateAnalyticsInsights } from "@/lib/analytics-insights.functions";
 
 export const Route = createFileRoute("/_app/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Forge" }] }),
