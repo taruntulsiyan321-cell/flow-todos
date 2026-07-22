@@ -49,9 +49,11 @@ function TimeLogPage() {
   const [date, setDate] = useState(todayISO());
   const [saving, setSaving] = useState<string | null>(null);
 
-  // Manual quick-add: just a time + category
+  // Manual quick-add: time + optional end time + category + optional activity
   const [manualTime, setManualTime] = useState(toHHMM(new Date()));
+  const [manualEnd, setManualEnd] = useState("");
   const [manualCat, setManualCat] = useState("Work");
+  const [manualActivity, setManualActivity] = useState("");
 
   const load = async (d = date) => {
     setLoading(true);
