@@ -1,12 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Clock, Plus, Trash2, Play, Square, Sparkles, Tag } from "lucide-react";
+import { Clock, Trash2, Play, Square, Sparkles, Tag, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -36,11 +32,6 @@ const CATEGORIES = [
 ];
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
-const toLocalDT = (iso: string) => {
-  const d = new Date(iso);
-  const off = d.getTimezoneOffset();
-  return new Date(d.getTime() - off * 60_000).toISOString().slice(0, 16);
-};
 const fmtTime = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 const fmtDur = (m: number | null) => {
@@ -49,19 +40,18 @@ const fmtDur = (m: number | null) => {
   const min = m % 60;
   return h > 0 ? `${h}h ${min}m` : `${min}m`;
 };
+const toHHMM = (d: Date) =>
+  `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 
 function TimeLogPage() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(todayISO());
-  const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState<string | null>(null);
 
-  const [activity, setActivity] = useState("");
-  const [category, setCategory] = useState<string>("Work");
-  const [start, setStart] = useState(toLocalDT(new Date().toISOString()));
-  const [end, setEnd] = useState<string>("");
-  const [notes, setNotes] = useState("");
+  // Manual quick-add: just a time + category
+  const [manualTime, setManualTime] = useState(toHHMM(new Date()));
+  const [manualCat, setManualCat] = useState("Work");
 
   const load = async (d = date) => {
     setLoading(true);
@@ -78,43 +68,49 @@ function TimeLogPage() {
     void load(date);
   }, [date]);
 
-  const resetForm = () => {
-    setActivity("");
-    setCategory("Work");
-    setStart(toLocalDT(new Date().toISOString()));
-    setEnd("");
-    setNotes("");
-  };
+  const ongoing = useMemo(() => entries.find((e) => !e.end_time), [entries]);
 
-  const submit = async () => {
-    if (!activity.trim()) return toast.error("What did you do?");
-    setSaving(true);
+  const insertPoint = async (category: string, when: Date) => {
+    setSaving(category);
     const { data: u } = await supabase.auth.getUser();
-    if (!u.user) {
-      setSaving(false);
-      return;
-    }
-    const startISO = new Date(start).toISOString();
-    const endISO = end ? new Date(end).toISOString() : null;
-    const dur =
-      endISO ? Math.max(0, Math.round((new Date(endISO).getTime() - new Date(startISO).getTime()) / 60000)) : null;
+    if (!u.user) { setSaving(null); return; }
+    const iso = when.toISOString();
     const { error } = await supabase.from("time_logs").insert({
       user_id: u.user.id,
-      activity: activity.trim(),
+      activity: category,
       category,
-      log_date: startISO.slice(0, 10),
-      start_time: startISO,
-      end_time: endISO,
-      duration_minutes: dur,
-      notes: notes.trim() || null,
+      log_date: iso.slice(0, 10),
+      start_time: iso,
+      end_time: iso,
+      duration_minutes: 0,
+      notes: null,
     });
-    setSaving(false);
+    setSaving(null);
     if (error) return toast.error(error.message);
-    toast.success("Logged");
-    resetForm();
-    setOpen(false);
-    setDate(startISO.slice(0, 10));
-    void load(startISO.slice(0, 10));
+    toast.success(`${category} · ${fmtTime(iso)}`);
+    if (iso.slice(0, 10) !== date) setDate(iso.slice(0, 10));
+    else void load();
+  };
+
+  const startTimer = async (category: string) => {
+    setSaving(category);
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) { setSaving(null); return; }
+    const iso = new Date().toISOString();
+    const { error } = await supabase.from("time_logs").insert({
+      user_id: u.user.id,
+      activity: category,
+      category,
+      log_date: iso.slice(0, 10),
+      start_time: iso,
+      end_time: null,
+      duration_minutes: null,
+      notes: null,
+    });
+    setSaving(null);
+    if (error) return toast.error(error.message);
+    toast.success(`Started ${category}`);
+    void load();
   };
 
   const stopOngoing = async (e: Entry) => {
@@ -135,6 +131,14 @@ function TimeLogPage() {
     setEntries((es) => es.filter((x) => x.id !== id));
   };
 
+  const submitManual = async () => {
+    const [hh, mm] = manualTime.split(":").map(Number);
+    if (Number.isNaN(hh) || Number.isNaN(mm)) return toast.error("Pick a time");
+    const d = new Date(date + "T00:00:00");
+    d.setHours(hh, mm, 0, 0);
+    await insertPoint(manualCat, d);
+  };
+
   const totalMin = useMemo(
     () => entries.reduce((s, e) => s + (e.duration_minutes ?? 0), 0),
     [entries],
@@ -150,87 +154,117 @@ function TimeLogPage() {
 
   return (
     <div className="space-y-5 animate-page-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <Clock className="h-6 w-6 text-primary" />
-            Time Log
-          </h1>
-          <p className="text-sm text-muted-foreground">Record what you did — and when.</p>
-        </div>
-        <Sheet open={open} onOpenChange={(v) => { setOpen(v); if (v) setStart(toLocalDT(new Date().toISOString())); }}>
-          <SheetTrigger asChild>
-            <Button size="sm" className="rounded-full" style={{ background: "var(--gradient-primary)" }}>
-              <Plus className="h-4 w-4" /> Log
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="rounded-t-3xl">
-            <SheetHeader>
-              <SheetTitle>New time entry</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4 space-y-4">
-              <div>
-                <Label htmlFor="t-act">Activity</Label>
-                <Input id="t-act" value={activity} onChange={(e) => setActivity(e.target.value)} placeholder="Deep work on project X" />
-              </div>
-              <div>
-                <Label className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Category</Label>
-                <div className="flex flex-wrap gap-2">
-                  {CATEGORIES.map((c) => (
-                    <button
-                      key={c.label}
-                      type="button"
-                      onClick={() => setCategory(c.label)}
-                      className={cn(
-                        "rounded-full border px-3 py-1.5 text-xs font-medium transition",
-                        category === c.label ? "border-primary text-foreground" : "border-border text-muted-foreground",
-                      )}
-                      style={category === c.label ? { background: "var(--gradient-card)", boxShadow: "var(--shadow-glow)" } : undefined}
-                    >
-                      <span className="mr-1.5 inline-block h-2 w-2 rounded-full align-middle" style={{ background: c.color }} />
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="t-start">Start</Label>
-                  <Input id="t-start" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} />
-                </div>
-                <div>
-                  <Label htmlFor="t-end">End (optional)</Label>
-                  <Input id="t-end" type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="t-notes">Notes (optional)</Label>
-                <Textarea id="t-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Anything worth remembering..." />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1 rounded-full"
-                  onClick={() => { setEnd(""); void submit(); }}
-                  disabled={saving}
-                >
-                  <Play className="h-4 w-4" /> Start now
-                </Button>
-                <Button
-                  className="flex-1 rounded-full"
-                  style={{ background: "var(--gradient-primary)" }}
-                  onClick={submit}
-                  disabled={saving}
-                >
-                  {saving ? "Saving…" : "Save entry"}
-                </Button>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
+      <div>
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+          <Clock className="h-6 w-6 text-primary" />
+          Time Log
+        </h1>
+        <p className="text-sm text-muted-foreground">One tap. Time is added automatically.</p>
       </div>
 
-      {/* Date picker + totals */}
+      {/* One-tap quick log */}
+      <div
+        className="rounded-3xl border border-border p-4"
+        style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-glow)" }}
+      >
+        <p className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <Zap className="h-3.5 w-3.5 text-primary" /> Tap to log · now
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.label}
+              onClick={() => insertPoint(c.label, new Date())}
+              disabled={saving === c.label}
+              className={cn(
+                "group relative overflow-hidden rounded-2xl border border-border px-3 py-3 text-left transition-all",
+                "hover:scale-[1.03] active:scale-95 disabled:opacity-60",
+              )}
+              style={{ background: "var(--gradient-card)" }}
+            >
+              <span
+                className="mb-1.5 inline-block h-2.5 w-2.5 rounded-full"
+                style={{ background: c.color, boxShadow: `0 0 8px ${c.color}` }}
+              />
+              <p className="text-sm font-semibold text-foreground">{c.label}</p>
+              <p className="text-[10px] text-muted-foreground">now · {toHHMM(new Date())}</p>
+            </button>
+          ))}
+        </div>
+
+        {/* Live timer (optional) */}
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-border/70 p-3">
+          {ongoing ? (
+            <>
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-wider text-primary">Live</p>
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {ongoing.category} · started {fmtTime(ongoing.start_time)}
+                </p>
+              </div>
+              <button
+                onClick={() => stopOngoing(ongoing)}
+                className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition active:scale-95"
+              >
+                <Square className="h-3.5 w-3.5" /> Stop
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">Or start a live timer</p>
+              <div className="flex gap-1.5">
+                {CATEGORIES.slice(0, 4).map((c) => (
+                  <button
+                    key={c.label}
+                    onClick={() => startTimer(c.label)}
+                    className="flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-foreground transition hover:border-primary/50 active:scale-95"
+                  >
+                    <Play className="h-3 w-3" style={{ color: c.color }} /> {c.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Manual: just pick a time */}
+      <div
+        className="rounded-2xl border border-border p-4"
+        style={{ background: "var(--gradient-card)" }}
+      >
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Add at a specific time
+        </p>
+        <div className="flex items-center gap-2">
+          <Input
+            type="time"
+            value={manualTime}
+            onChange={(e) => setManualTime(e.target.value)}
+            className="h-10 w-32"
+          />
+          <select
+            value={manualCat}
+            onChange={(e) => setManualCat(e.target.value)}
+            className="h-10 flex-1 rounded-md border border-border bg-transparent px-2 text-sm text-foreground"
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c.label} value={c.label} className="bg-background">
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={submitManual}
+            className="h-10 rounded-md px-4 text-sm font-semibold text-primary-foreground transition active:scale-95"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      {/* Date + totals */}
       <div
         className="flex items-center justify-between gap-3 rounded-2xl border border-border p-4"
         style={{ background: "var(--gradient-card)" }}
@@ -250,7 +284,7 @@ function TimeLogPage() {
         </div>
       </div>
 
-      {byCategory.length > 0 && (
+      {byCategory.length > 0 && totalMin > 0 && (
         <div className="rounded-2xl border border-border p-4" style={{ background: "var(--gradient-card)" }}>
           <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <Tag className="h-3.5 w-3.5" /> By category
@@ -280,48 +314,49 @@ function TimeLogPage() {
 
       {loading ? (
         <div className="space-y-3">
-          <div className="h-20 animate-pulse rounded-2xl bg-card" />
-          <div className="h-20 animate-pulse rounded-2xl bg-card" />
+          <div className="h-16 animate-pulse rounded-2xl bg-card" />
+          <div className="h-16 animate-pulse rounded-2xl bg-card" />
         </div>
       ) : entries.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border p-10 text-center">
           <Sparkles className="mx-auto h-8 w-8 text-primary" />
-          <p className="mt-3 text-sm font-medium text-foreground">No entries yet</p>
-          <p className="text-xs text-muted-foreground">Log your first activity for today.</p>
+          <p className="mt-3 text-sm font-medium text-foreground">Nothing logged yet</p>
+          <p className="text-xs text-muted-foreground">Tap any category above to log now.</p>
         </div>
       ) : (
         <ol className="relative space-y-3 border-l border-border pl-5">
           {entries.map((e) => {
             const cat = CATEGORIES.find((c) => c.label === e.category) || CATEGORIES[5];
-            const ongoing = !e.end_time;
+            const live = !e.end_time;
+            const isPoint = e.end_time && e.duration_minutes === 0;
             return (
               <li key={e.id} className="relative">
                 <span
                   className="absolute -left-[27px] top-3 h-3 w-3 rounded-full ring-4 ring-background"
-                  style={{ background: cat.color, boxShadow: ongoing ? "var(--shadow-glow)" : undefined }}
+                  style={{ background: cat.color, boxShadow: live ? "var(--shadow-glow)" : undefined }}
                 />
                 <article
-                  className="rounded-2xl border border-border p-4 transition hover:border-primary/40"
+                  className="rounded-2xl border border-border p-3 transition hover:border-primary/40"
                   style={{ background: "var(--gradient-card)" }}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-semibold text-foreground">{e.activity}</p>
-                        {ongoing && (
+                        <p className="truncate text-sm font-semibold text-foreground">{e.category || e.activity}</p>
+                        {live && (
                           <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary animate-pulse">
                             live
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {fmtTime(e.start_time)} {e.end_time ? `– ${fmtTime(e.end_time)}` : "· ongoing"} · {fmtDur(e.duration_minutes)}
-                        {e.category ? ` · ${e.category}` : ""}
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {isPoint
+                          ? fmtTime(e.start_time)
+                          : `${fmtTime(e.start_time)}${e.end_time ? ` – ${fmtTime(e.end_time)}` : " · ongoing"} · ${fmtDur(e.duration_minutes)}`}
                       </p>
-                      {e.notes && <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80">{e.notes}</p>}
                     </div>
-                    <div className="flex flex-col gap-1">
-                      {ongoing && (
+                    <div className="flex items-center gap-1">
+                      {live && (
                         <button
                           onClick={() => stopOngoing(e)}
                           className="rounded-lg p-1.5 text-primary hover:bg-primary/10"
