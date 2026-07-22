@@ -283,40 +283,65 @@ function TimeLogPage() {
         </div>
       </div>
 
-      {/* Manual: just pick a time */}
+      {/* Manual: pick start, optional end, category, and what you did */}
       <div
         className="rounded-2xl border border-border p-4"
         style={{ background: "var(--gradient-card)" }}
       >
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Add at a specific time
+          Add with time range
         </p>
-        <div className="flex items-center gap-2">
-          <Input
-            type="time"
-            value={manualTime}
-            onChange={(e) => setManualTime(e.target.value)}
-            className="h-10 w-32"
-          />
-          <select
-            value={manualCat}
-            onChange={(e) => setManualCat(e.target.value)}
-            className="h-10 flex-1 rounded-md border border-border bg-transparent px-2 text-sm text-foreground"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c.label} value={c.label} className="bg-background">
-                {c.label}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={submitManual}
-            className="h-10 rounded-md px-4 text-sm font-semibold text-primary-foreground transition active:scale-95"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            Add
-          </button>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <label className="col-span-1 flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Start</span>
+            <Input
+              type="time"
+              value={manualTime}
+              onChange={(e) => setManualTime(e.target.value)}
+              className="h-10"
+            />
+          </label>
+          <label className="col-span-1 flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">End · optional</span>
+            <Input
+              type="time"
+              value={manualEnd}
+              onChange={(e) => setManualEnd(e.target.value)}
+              className="h-10"
+            />
+          </label>
+          <label className="col-span-2 flex flex-col gap-1 sm:col-span-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Type</span>
+            <select
+              value={manualCat}
+              onChange={(e) => setManualCat(e.target.value)}
+              className="h-10 rounded-md border border-border bg-transparent px-2 text-sm text-foreground"
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c.label} value={c.label} className="bg-background">
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="col-span-2 flex flex-col gap-1 sm:col-span-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">What you did</span>
+            <Input
+              type="text"
+              placeholder="e.g. Design review"
+              value={manualActivity}
+              onChange={(e) => setManualActivity(e.target.value)}
+              className="h-10"
+            />
+          </label>
         </div>
+        <button
+          onClick={submitManual}
+          className="mt-3 h-10 w-full rounded-md px-4 text-sm font-semibold text-primary-foreground transition active:scale-95"
+          style={{ background: "var(--gradient-primary)" }}
+        >
+          {manualEnd ? "Add range" : "Add at time"}
+        </button>
       </div>
 
       {/* Date + totals */}
