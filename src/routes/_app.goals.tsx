@@ -44,11 +44,10 @@ function GoalsPage() {
 
     const today = new Date().toISOString().slice(0, 10);
     const monthly = ((data as Goal[]) ?? []).find((g) => g.horizon === "monthly" && g.status === "active");
-    const { data: tasks } = await supabase
-      .from("tasks")
+    const { data: tasks } = await lifeFrom("tasks")
       .select("id,completed,goal_id")
       .gte("created_at", `${today}T00:00:00Z`);
-    const rows = tasks ?? [];
+    const rows = (tasks ?? []) as { id: string; completed: boolean; goal_id: string | null }[];
     const linked = rows.filter((t) => t.goal_id);
     const base = linked.length ? linked : rows;
     const pct = contributionPercent(base.filter((t) => t.completed).length, Math.max(1, base.length));
