@@ -14,6 +14,7 @@ import {
   BookHeart,
   Compass,
   ShieldCheck,
+  Clock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/life")({
@@ -26,6 +27,7 @@ const LINKS = [
   { to: "/coach", label: "AI Life Coach", desc: "Evening reflection", Icon: Sparkles },
   { to: "/reviews", label: "Weekly / Monthly", desc: "GTD reviews", Icon: CalendarRange },
   { to: "/focus", label: "Focus Mode", desc: "Pomodoro & deep work", Icon: Brain },
+  { to: "/timelog", label: "Time Log", desc: "What you did & when", Icon: Clock },
   { to: "/wheel", label: "Life Areas", desc: "Wheel of Life", Icon: Compass },
   { to: "/okrs", label: "Personal OKRs", desc: "Quarterly objectives", Icon: Flag },
   { to: "/decisions", label: "Decision Journal", desc: "Thinking in bets", Icon: Scale },

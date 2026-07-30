@@ -298,7 +298,7 @@ function Dashboard() {
         <QuickLink to="/tasks" icon={<CheckSquare className="h-5 w-5 text-accent" />} label="Quests" sub={`${openTaskCount} open`} />
         <QuickLink to="/goals" icon={<Target className="h-5 w-5 text-primary" />} label="Goals" sub="Vision → daily" />
         <QuickLink to="/coach" icon={<Sparkles className="h-5 w-5 text-primary" />} label="Life Coach" sub="Evening review" />
-        <QuickLink to="/focus" icon={<Clock className="h-5 w-5 text-accent" />} label="Focus" sub="Deep work timer" />
+        <QuickLink to="/timelog" icon={<Clock className="h-5 w-5 text-accent" />} label="Time Log" sub="What & when" />
         <QuickLink to="/life" icon={<Users className="h-5 w-5 text-success" />} label="Life OS" sub="All tools" />
         <QuickLink to="/journal" icon={<BookOpen className="h-5 w-5 text-success" />} label="Journal" sub="Morning & evening" />
         <QuickLink to="/analytics" icon={<BarChart3 className="h-5 w-5 text-primary" />} label="Stats" sub="Life analytics" />
