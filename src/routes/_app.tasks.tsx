@@ -22,6 +22,8 @@ type Task = {
   due_date: string | null;
   completed: boolean;
   xp_reward: number;
+  postponed_count?: number;
+  last_postpone_reason?: string | null;
 };
 
 const CATEGORIES = [
@@ -50,6 +52,7 @@ function TasksPage() {
   const [loading, setLoading] = useState(!cached);
   const [showAdd, setShowAdd] = useState(false);
   const [filter, setFilter] = useState<"all" | Task["category"]>("all");
+  const [postponeId, setPostponeId] = useState<string | null>(null);
 
   const load = async (showSpinner = false) => {
     if (showSpinner) setLoading(true);
@@ -59,7 +62,17 @@ function TasksPage() {
       .order("completed", { ascending: true })
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
-    const next = (data ?? []) as Task[];
+    let next = (data ?? []) as Task[];
+    try {
+      const { lifeFrom } = await import("@/lib/lifeos-db");
+      const enriched = await lifeFrom("tasks")
+        .select("id,title,notes,category,priority,due_date,completed,xp_reward,postponed_count,last_postpone_reason")
+        .order("completed", { ascending: true })
+        .order("created_at", { ascending: false });
+      if (enriched.data) next = enriched.data as Task[];
+    } catch {
+      /* migration optional */
+    }
     setTasks(next);
     cacheSet("tasks", next);
     setLoading(false);
@@ -103,6 +116,27 @@ function TasksPage() {
     });
     const { error } = await supabase.from("tasks").delete().eq("id", id);
     if (error) { toast.error(error.message); load(); }
+  };
+
+  const postpone = async (t: Task, reason: string) => {
+    const { lifeFrom } = await import("@/lib/lifeos-db");
+    const count = (t.postponed_count ?? 0) + 1;
+    await lifeFrom("tasks")
+      .update({ postponed_count: count, last_postpone_reason: reason })
+      .eq("id", t.id);
+    setPostponeId(null);
+    const tip =
+      reason === "Too difficult"
+        ? "Break it into a 2-minute starter step."
+        : reason === "Too boring"
+          ? "Pair it with a reward or habit stack."
+          : reason === "Too unclear"
+            ? "Rewrite the next physical action in one sentence."
+            : reason === "Fear"
+              ? "Shrink the stakes — ship a draft, not perfection."
+              : "Time-box 15 minutes and start ugly.";
+    toast.message(`Postponed ${count}×`, { description: tip });
+    void load();
   };
 
   const visible = filter === "all" ? tasks : tasks.filter((t) => t.category === filter);
@@ -181,7 +215,31 @@ function TasksPage() {
                     <span className="flex items-center gap-1"><CatIcon className="h-3 w-3" />{cat.label}</span>
                     <span style={{ color: PRIORITY_STYLES[t.priority].color }}>● {PRIORITY_STYLES[t.priority].label}</span>
                     <span>+{t.xp_reward} XP</span>
+                    {(t.postponed_count ?? 0) > 0 && (
+                      <span className="text-warning">postponed {t.postponed_count}×</span>
+                    )}
                   </div>
+                  {!t.completed && (
+                    <button
+                      className="mt-1 text-[10px] text-muted-foreground underline"
+                      onClick={() => setPostponeId(postponeId === t.id ? null : t.id)}
+                    >
+                      Why am I postponing?
+                    </button>
+                  )}
+                  {postponeId === t.id && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {["Too difficult", "Too boring", "Too unclear", "Fear", "Other"].map((r) => (
+                        <button
+                          key={r}
+                          onClick={() => postpone(t, r)}
+                          className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground"
+                        >
+                          {r}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => remove(t.id)}

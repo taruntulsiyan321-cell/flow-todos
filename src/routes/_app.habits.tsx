@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { celebrateXp, deductXp } from "@/lib/feedback";
 import { HabitHeatmap } from "@/components/HabitHeatmap";
 import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
+import { lifeFrom } from "@/lib/lifeos-db";
+import { habitCompletionRate, habitScore } from "@/lib/lifeos";
 
 export const Route = createFileRoute("/_app/habits")({
   head: () => ({ meta: [{ title: "Habits — Forge" }] }),
@@ -20,6 +22,10 @@ type Habit = {
   description: string | null;
   color: string;
   xp_reward: number;
+  difficulty?: number;
+  is_keystone?: boolean;
+  identity_statement?: string | null;
+  stack_after_habit_id?: string | null;
 };
 
 const HABIT_COLORS = ["primary", "accent", "warning", "success", "destructive"] as const;
@@ -70,8 +76,18 @@ function HabitsPage() {
       supabase.from("habit_checkins").select("habit_id").eq("completed_on", today),
       supabase.from("habit_checkins").select("habit_id,completed_on").order("completed_on", { ascending: false }).limit(500),
     ]);
+    // Prefer enriched columns when migration applied; fall back silently
+    let nextHabits = (habitsRes.data ?? []) as Habit[];
+    try {
+      const enriched = await lifeFrom("habits")
+        .select("id,name,description,color,xp_reward,difficulty,is_keystone,identity_statement,stack_after_habit_id")
+        .eq("archived", false)
+        .order("created_at", { ascending: true });
+      if (!enriched.error && enriched.data) nextHabits = enriched.data as Habit[];
+    } catch {
+      /* columns may not exist yet */
+    }
     if (habitsRes.error) toast.error(habitsRes.error.message);
-    const nextHabits = habitsRes.data ?? [];
     const nextDone = (checkinsRes.data ?? []).map((c) => c.habit_id);
     const streakMap = recomputeStreaks(allCheckinsRes.data ?? []);
     setHabits(nextHabits);
@@ -164,12 +180,20 @@ function HabitsPage() {
           {habits.map((h) => {
             const done = doneToday.has(h.id);
             const streak = streaks[h.id] ?? 0;
+            const rate = habitCompletionRate(Math.min(7, streak), 7);
+            const score = habitScore({
+              completionRate: rate,
+              streak,
+              difficulty: h.difficulty ?? 3,
+            });
+            const stackParent = habits.find((x) => x.id === h.stack_after_habit_id);
             return (
               <li
                 key={h.id}
                 className={cn(
                   "group flex items-center gap-3 rounded-2xl border border-border p-4 transition-all",
                   done && "border-primary/40",
+                  h.is_keystone && "border-warning/50",
                 )}
                 style={{ background: "var(--gradient-card)", boxShadow: done ? "var(--shadow-glow)" : undefined }}
               >
@@ -184,15 +208,28 @@ function HabitsPage() {
                   {done && <Check className="h-6 w-6 animate-check-pop" strokeWidth={3} />}
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className={cn("font-semibold text-foreground", done && "line-through opacity-60")}>{h.name}</p>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                  <p className={cn("font-semibold text-foreground", done && "line-through opacity-60")}>
+                    {h.is_keystone ? "🔑 " : ""}
+                    {h.name}
+                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Flame className="h-3 w-3 text-warning" />
                       {streak} day{streak === 1 ? "" : "s"}
                     </span>
                     <span>·</span>
+                    <span>score {score}</span>
+                    <span>·</span>
+                    <span>diff {h.difficulty ?? 3}/5</span>
+                    <span>·</span>
                     <span>+{h.xp_reward} XP</span>
                   </div>
+                  {stackParent && (
+                    <p className="mt-1 text-[10px] text-accent">Stack after: {stackParent.name}</p>
+                  )}
+                  {h.identity_statement && (
+                    <p className="mt-1 text-[10px] italic text-muted-foreground">{h.identity_statement}</p>
+                  )}
                 </div>
                 <button
                   onClick={() => deleteHabit(h.id)}
@@ -205,6 +242,36 @@ function HabitsPage() {
             );
           })}
         </ul>
+      )}
+
+      {!loading && habits.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-4 text-sm">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Atomic Habits AI</p>
+          <p className="mt-1 text-foreground">
+            {(() => {
+              const ranked = [...habits]
+                .map((h) => ({
+                  h,
+                  score: habitScore({
+                    completionRate: habitCompletionRate(Math.min(7, streaks[h.id] ?? 0), 7),
+                    streak: streaks[h.id] ?? 0,
+                    difficulty: h.difficulty ?? 3,
+                  }),
+                }))
+                .sort((a, b) => b.score - a.score);
+              const best = ranked[0];
+              const worst = ranked[ranked.length - 1];
+              const keystone = habits.find((h) => h.is_keystone);
+              const stackHint =
+                best && worst && best.h.id !== worst.h.id
+                  ? ` Try stacking “${worst.h.name}” after “${best.h.name}”.`
+                  : "";
+              return `${best ? `Most responsible for success: ${best.h.name} (score ${best.score}).` : ""} ${
+                worst && (streaks[worst.h.id] ?? 0) < 2 ? `Declining: ${worst.h.name}.` : ""
+              }${keystone ? ` Keystone: ${keystone.name}.` : ""}${stackHint}`;
+            })()}
+          </p>
+        </div>
       )}
 
       {!loading && habits.length > 0 && <HabitHeatmap />}
@@ -235,6 +302,9 @@ function AddHabitSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   const [description, setDescription] = useState("");
   const [color, setColor] = useState<string>("primary");
   const [xp, setXp] = useState(10);
+  const [difficulty, setDifficulty] = useState(3);
+  const [keystone, setKeystone] = useState(false);
+  const [identity, setIdentity] = useState("");
   const [saving, setSaving] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -244,15 +314,33 @@ function AddHabitSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () 
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setSaving(false); return; }
-    const { error } = await supabase.from("habits").insert({
+    const payload: Record<string, unknown> = {
       user_id: u.user.id,
       name: parsed.data.name,
       description: parsed.data.description ?? null,
       color,
       xp_reward: xp,
-    });
+      difficulty,
+      is_keystone: keystone,
+      identity_statement: identity.trim()
+        ? identity.trim().startsWith("I am")
+          ? identity.trim()
+          : `I am someone who ${identity.trim().replace(/^i want to\s+/i, "")}.`
+        : null,
+    };
+    const { error } = await lifeFrom("habits").insert(payload);
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      // Fallback if migration not applied yet
+      const { error: e2 } = await supabase.from("habits").insert({
+        user_id: u.user.id,
+        name: parsed.data.name,
+        description: parsed.data.description ?? null,
+        color,
+        xp_reward: xp,
+      });
+      if (e2) return toast.error(e2.message);
+    }
     toast.success("Habit forged!");
     onSaved();
   };
@@ -322,6 +410,33 @@ function AddHabitSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () 
               ))}
             </div>
           </div>
+
+          <div>
+            <label className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">
+              Difficulty {difficulty}/5
+            </label>
+            <input
+              type="range"
+              min={1}
+              max={5}
+              value={difficulty}
+              onChange={(e) => setDifficulty(Number(e.target.value))}
+              className="w-full"
+            />
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input type="checkbox" checked={keystone} onChange={(e) => setKeystone(e.target.checked)} />
+            Keystone habit (drives other wins)
+          </label>
+
+          <input
+            value={identity}
+            onChange={(e) => setIdentity(e.target.value)}
+            placeholder="Identity: never skips workouts"
+            maxLength={120}
+            className="w-full rounded-xl border border-border bg-input px-4 py-3 text-sm text-foreground outline-none focus:border-primary"
+          />
         </div>
 
         <button

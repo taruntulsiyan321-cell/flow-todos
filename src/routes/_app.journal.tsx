@@ -26,6 +26,8 @@ type Entry = {
   tags: string[] | null;
   entry_date: string;
   created_at: string;
+  entry_type?: string;
+  structured?: Record<string, string> | null;
 };
 
 const MOODS = [
@@ -46,7 +48,27 @@ function JournalPage() {
   const [mood, setMood] = useState<number>(3);
   const [tagsInput, setTagsInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const [entryType, setEntryType] = useState<"free" | "morning" | "evening">("free");
+  const [structured, setStructured] = useState<Record<string, string>>({});
   const prompt = useMemo(() => dailyPrompt(), []);
+
+  const structuredFields =
+    entryType === "morning"
+      ? [
+          ["gratitude", "Gratitude"],
+          ["intention", "Intention"],
+          ["mit", "Most Important Task"],
+          ["focus", "Today's Focus"],
+        ]
+      : entryType === "evening"
+        ? [
+            ["wins", "Wins"],
+            ["mistakes", "Mistakes"],
+            ["lessons", "Lessons"],
+            ["reflection", "Reflection"],
+            ["gratitude", "Gratitude"],
+          ]
+        : [];
 
   const usePrompt = () => {
     setOpen(true);
@@ -76,7 +98,12 @@ function JournalPage() {
   }, []);
 
   const submit = async () => {
-    if (!content.trim()) {
+    const structuredText = structuredFields
+      .map(([k, label]) => `${label}: ${structured[k] ?? ""}`)
+      .filter((l) => !l.endsWith(": "))
+      .join("\n");
+    const body = entryType === "free" ? content.trim() : [structuredText, content.trim()].filter(Boolean).join("\n\n");
+    if (!body) {
       toast.error("Write something first");
       return;
     }
@@ -84,23 +111,49 @@ function JournalPage() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
     const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
-    const { error } = await supabase.from("journal_entries").insert({
+    const { lifeFrom } = await import("@/lib/lifeos-db");
+    const { error } = await lifeFrom("journal_entries").insert({
       user_id: u.user.id,
-      title: title.trim() || null,
-      content: content.trim(),
+      title: title.trim() || (entryType === "morning" ? "Morning journal" : entryType === "evening" ? "Evening journal" : null),
+      content: body,
       mood,
-      tags,
+      tags: [...tags, entryType],
+      entry_type: entryType,
+      structured,
     });
     setSaving(false);
     if (error) {
-      toast.error(error.message);
-      return;
+      const { error: e2 } = await supabase.from("journal_entries").insert({
+        user_id: u.user.id,
+        title: title.trim() || null,
+        content: body,
+        mood,
+        tags,
+      });
+      if (e2) {
+        toast.error(e2.message);
+        return;
+      }
+    }
+    // Mirror into knowledge base
+    try {
+      const { lifeFrom: lf } = await import("@/lib/lifeos-db");
+      await lf("knowledge_notes").insert({
+        user_id: u.user.id,
+        title: title.trim() || `${entryType} journal`,
+        content: body,
+        source_type: "journal",
+        tags: [...tags, "journal", entryType],
+      });
+    } catch {
+      /* optional */
     }
     toast.success("+20 XP — entry saved");
     setTitle("");
     setContent("");
     setMood(3);
     setTagsInput("");
+    setStructured({});
     setOpen(false);
     cacheInvalidate("dashboard");
     load();
@@ -153,6 +206,21 @@ function JournalPage() {
               <SheetTitle>New entry</SheetTitle>
             </SheetHeader>
             <div className="mt-4 space-y-4">
+              <div className="grid grid-cols-3 gap-2">
+                {(["morning", "free", "evening"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setEntryType(t)}
+                    className={cn(
+                      "rounded-xl border py-2 text-xs capitalize",
+                      entryType === t ? "border-primary text-primary" : "border-border text-muted-foreground",
+                    )}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
               <div>
                 <Label className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Mood</Label>
                 <div className="flex justify-between gap-2">
@@ -173,18 +241,29 @@ function JournalPage() {
                   ))}
                 </div>
               </div>
+              {structuredFields.map(([key, label]) => (
+                <div key={key}>
+                  <Label>{label}</Label>
+                  <Textarea
+                    value={structured[key] ?? ""}
+                    onChange={(e) => setStructured((s) => ({ ...s, [key]: e.target.value }))}
+                    rows={2}
+                    placeholder={label}
+                  />
+                </div>
+              ))}
               <div>
                 <Label htmlFor="j-title">Title (optional)</Label>
                 <Input id="j-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="A line about today..." />
               </div>
               <div>
-                <Label htmlFor="j-content">Reflection</Label>
+                <Label htmlFor="j-content">{entryType === "free" ? "Reflection" : "Extra notes"}</Label>
                 <Textarea
                   id="j-content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="What happened? How did it feel? What did you learn?"
-                  rows={6}
+                  rows={entryType === "free" ? 6 : 3}
                 />
               </div>
               <div>

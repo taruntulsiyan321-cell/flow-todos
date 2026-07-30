@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Trophy, Flame, Sparkles, Award } from "lucide-react";
+import { LogOut, Trophy, Flame, Sparkles, Award, Compass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { rankFor, rankInfo, levelFromXp, xpForLevel } from "@/lib/xp";
 import { XpBar } from "@/components/XpBar";
@@ -127,6 +127,17 @@ function ProfilePage() {
         <Stat icon={<Flame className="h-5 w-5 text-warning" />} value={profile.current_streak} label="Current" />
         <Stat icon={<Trophy className="h-5 w-5 text-accent" />} value={profile.longest_streak} label="Best" />
       </div>
+
+      <Link
+        to="/life"
+        className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4"
+      >
+        <Compass className="h-5 w-5 text-primary" />
+        <div>
+          <p className="text-sm font-semibold">Life OS</p>
+          <p className="text-xs text-muted-foreground">Goals, coach, focus, reviews & more</p>
+        </div>
+      </Link>
 
       {/* Achievements */}
       <div>

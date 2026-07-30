@@ -23,12 +23,14 @@ type Entry = {
 };
 
 const CATEGORIES = [
-  { label: "Work", color: "var(--primary)" },
-  { label: "Study", color: "var(--accent)" },
-  { label: "Exercise", color: "var(--warning)" },
-  { label: "Personal", color: "var(--success)" },
-  { label: "Break", color: "var(--muted-foreground)" },
-  { label: "Other", color: "var(--muted-foreground)" },
+  { label: "Work", color: "var(--primary)", depth: "shallow" as const },
+  { label: "Deep Work", color: "var(--accent)", depth: "deep" as const },
+  { label: "Study", color: "var(--accent)", depth: "deep" as const },
+  { label: "Exercise", color: "var(--warning)", depth: "shallow" as const },
+  { label: "Meeting", color: "var(--muted-foreground)", depth: "meeting" as const },
+  { label: "Personal", color: "var(--success)", depth: "shallow" as const },
+  { label: "Break", color: "var(--muted-foreground)", depth: "break" as const },
+  { label: "Other", color: "var(--muted-foreground)", depth: "shallow" as const },
 ];
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -77,7 +79,9 @@ function TimeLogPage() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setSaving(null); return; }
     const iso = when.toISOString();
-    const { error } = await supabase.from("time_logs").insert({
+    const depth = CATEGORIES.find((c) => c.label === category)?.depth ?? "shallow";
+    const { lifeFrom } = await import("@/lib/lifeos-db");
+    const { error } = await lifeFrom("time_logs").insert({
       user_id: u.user.id,
       activity: category,
       category,
@@ -86,9 +90,22 @@ function TimeLogPage() {
       end_time: iso,
       duration_minutes: 0,
       notes: null,
+      work_depth: depth,
     });
     setSaving(null);
-    if (error) return toast.error(error.message);
+    if (error) {
+      const { error: e2 } = await supabase.from("time_logs").insert({
+        user_id: u.user.id,
+        activity: category,
+        category,
+        log_date: iso.slice(0, 10),
+        start_time: iso,
+        end_time: iso,
+        duration_minutes: 0,
+        notes: null,
+      });
+      if (e2) return toast.error(e2.message);
+    }
     toast.success(`${category} · ${fmtTime(iso)}`);
     if (iso.slice(0, 10) !== date) setDate(iso.slice(0, 10));
     else void load();
@@ -99,7 +116,9 @@ function TimeLogPage() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setSaving(null); return; }
     const iso = new Date().toISOString();
-    const { error } = await supabase.from("time_logs").insert({
+    const depth = CATEGORIES.find((c) => c.label === category)?.depth ?? "shallow";
+    const { lifeFrom } = await import("@/lib/lifeos-db");
+    const { error } = await lifeFrom("time_logs").insert({
       user_id: u.user.id,
       activity: category,
       category,
@@ -108,9 +127,22 @@ function TimeLogPage() {
       end_time: null,
       duration_minutes: null,
       notes: null,
+      work_depth: depth,
     });
     setSaving(null);
-    if (error) return toast.error(error.message);
+    if (error) {
+      const { error: e2 } = await supabase.from("time_logs").insert({
+        user_id: u.user.id,
+        activity: category,
+        category,
+        log_date: iso.slice(0, 10),
+        start_time: iso,
+        end_time: null,
+        duration_minutes: null,
+        notes: null,
+      });
+      if (e2) return toast.error(e2.message);
+    }
     toast.success(`Started ${category}`);
     void load();
   };

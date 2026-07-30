@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, CheckSquare, Flame, User, BookOpen, Users } from "lucide-react";
+import { Home, CheckSquare, Flame, User, BookOpen, Compass } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
@@ -7,7 +7,7 @@ const tabs = [
   { to: "/habits", label: "Habits", Icon: Flame },
   { to: "/tasks", label: "Tasks", Icon: CheckSquare },
   { to: "/journal", label: "Journal", Icon: BookOpen },
-  { to: "/communities", label: "Crew", Icon: Users },
+  { to: "/life", label: "Life OS", Icon: Compass },
   { to: "/profile", label: "Me", Icon: User },
 ] as const;
 

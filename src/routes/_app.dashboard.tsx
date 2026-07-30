@@ -296,10 +296,12 @@ function Dashboard() {
       <div className="grid grid-cols-2 gap-3">
         <QuickLink to="/habits" icon={<Flame className="h-5 w-5 text-warning" />} label="Habits" sub={`${habitsDone}/${habitsTotal} today`} />
         <QuickLink to="/tasks" icon={<CheckSquare className="h-5 w-5 text-accent" />} label="Quests" sub={`${openTaskCount} open`} />
-        <QuickLink to="/journal" icon={<BookOpen className="h-5 w-5 text-success" />} label="Journal" sub="Reflect & earn" />
-        <QuickLink to="/communities" icon={<Users className="h-5 w-5 text-primary" />} label="Crew" sub="Communities" />
-        <QuickLink to="/analytics" icon={<BarChart3 className="h-5 w-5 text-primary" />} label="Stats" sub="Weekly insights" />
-        <QuickLink to="/timelog" icon={<Clock className="h-5 w-5 text-accent" />} label="Time Log" sub="What & when" />
+        <QuickLink to="/goals" icon={<Target className="h-5 w-5 text-primary" />} label="Goals" sub="Vision → daily" />
+        <QuickLink to="/coach" icon={<Sparkles className="h-5 w-5 text-primary" />} label="Life Coach" sub="Evening review" />
+        <QuickLink to="/focus" icon={<Clock className="h-5 w-5 text-accent" />} label="Focus" sub="Deep work timer" />
+        <QuickLink to="/life" icon={<Users className="h-5 w-5 text-success" />} label="Life OS" sub="All tools" />
+        <QuickLink to="/journal" icon={<BookOpen className="h-5 w-5 text-success" />} label="Journal" sub="Morning & evening" />
+        <QuickLink to="/analytics" icon={<BarChart3 className="h-5 w-5 text-primary" />} label="Stats" sub="Life analytics" />
       </div>
 
       {/* Smart nudges (with notification toggle) */}
@@ -362,7 +364,17 @@ function SuggestedActionCard({ suggested }: { suggested: NonNullable<SuggestedAc
   );
 }
 
-function QuickLink({ to, icon, label, sub }: { to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog"; icon: React.ReactNode; label: string; sub: string }) {
+function QuickLink({
+  to,
+  icon,
+  label,
+  sub,
+}: {
+  to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/goals" | "/coach" | "/focus" | "/life";
+  icon: React.ReactNode;
+  label: string;
+  sub: string;
+}) {
   return (
     <Link
       to={to}
