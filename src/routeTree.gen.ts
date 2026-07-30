@@ -14,29 +14,23 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTimelogRouteImport } from './routes/_app.timelog'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
+import { Route as AppReviewsRouteImport } from './routes/_app.reviews'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppPlannerRouteImport } from './routes/_app.planner'
 import { Route as AppPartnersRouteImport } from './routes/_app.partners'
+import { Route as AppOkrsRouteImport } from './routes/_app.okrs'
 import { Route as AppModerationRouteImport } from './routes/_app.moderation'
+import { Route as AppManualRouteImport } from './routes/_app.manual'
+import { Route as AppLifeRouteImport } from './routes/_app.life'
 import { Route as AppJournalRouteImport } from './routes/_app.journal'
 import { Route as AppHabitsRouteImport } from './routes/_app.habits'
+import { Route as AppGoalsRouteImport } from './routes/_app.goals'
+import { Route as AppFocusRouteImport } from './routes/_app.focus'
+import { Route as AppEnergyRouteImport } from './routes/_app.energy'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppCoachRouteImport } from './routes/_app.coach'
 import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
 import { Route as AppAccountabilityRouteImport } from './routes/_app.accountability'
-import { Route as AppCoachRouteImport } from './routes/_app.coach'
-import { Route as AppDecisionsRouteImport } from './routes/_app.decisions'
-import { Route as AppEnergyRouteImport } from './routes/_app.energy'
-import { Route as AppFocusRouteImport } from './routes/_app.focus'
-import { Route as AppGoalsRouteImport } from './routes/_app.goals'
-import { Route as AppIdeasRouteImport } from './routes/_app.ideas'
-import { Route as AppIdentityRouteImport } from './routes/_app.identity'
-import { Route as AppKnowledgeRouteImport } from './routes/_app.knowledge'
-import { Route as AppLearningRouteImport } from './routes/_app.learning'
-import { Route as AppLifeRouteImport } from './routes/_app.life'
-import { Route as AppManualRouteImport } from './routes/_app.manual'
-import { Route as AppOkrsRouteImport } from './routes/_app.okrs'
-import { Route as AppReviewsRouteImport } from './routes/_app.reviews'
-import { Route as AppWheelRouteImport } from './routes/_app.wheel'
 import { Route as AppCommunitiesIndexRouteImport } from './routes/_app.communities.index'
 import { Route as AppChallengesIndexRouteImport } from './routes/_app.challenges.index'
 import { Route as AppCommunitiesNewRouteImport } from './routes/_app.communities.new'
@@ -68,6 +62,11 @@ const AppTasksRoute = AppTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReviewsRoute = AppReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -83,9 +82,24 @@ const AppPartnersRoute = AppPartnersRouteImport.update({
   path: '/partners',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOkrsRoute = AppOkrsRouteImport.update({
+  id: '/okrs',
+  path: '/okrs',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppModerationRoute = AppModerationRouteImport.update({
   id: '/moderation',
   path: '/moderation',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManualRoute = AppManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLifeRoute = AppLifeRouteImport.update({
+  id: '/life',
+  path: '/life',
   getParentRoute: () => AppRoute,
 } as any)
 const AppJournalRoute = AppJournalRouteImport.update({
@@ -98,9 +112,29 @@ const AppHabitsRoute = AppHabitsRouteImport.update({
   path: '/habits',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGoalsRoute = AppGoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFocusRoute = AppFocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEnergyRoute = AppEnergyRouteImport.update({
+  id: '/energy',
+  path: '/energy',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCoachRoute = AppCoachRouteImport.update({
+  id: '/coach',
+  path: '/coach',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
@@ -113,84 +147,14 @@ const AppAccountabilityRoute = AppAccountabilityRouteImport.update({
   path: '/accountability',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCoachRoute = AppCoachRouteImport.update({
-  id: '/coach',
-  path: '/coach',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDecisionsRoute = AppDecisionsRouteImport.update({
-  id: '/decisions',
-  path: '/decisions',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEnergyRoute = AppEnergyRouteImport.update({
-  id: '/energy',
-  path: '/energy',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFocusRoute = AppFocusRouteImport.update({
-  id: '/focus',
-  path: '/focus',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGoalsRoute = AppGoalsRouteImport.update({
-  id: '/goals',
-  path: '/goals',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppIdeasRoute = AppIdeasRouteImport.update({
-  id: '/ideas',
-  path: '/ideas',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppIdentityRoute = AppIdentityRouteImport.update({
-  id: '/identity',
-  path: '/identity',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppKnowledgeRoute = AppKnowledgeRouteImport.update({
-  id: '/knowledge',
-  path: '/knowledge',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLearningRoute = AppLearningRouteImport.update({
-  id: '/learning',
-  path: '/learning',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLifeRoute = AppLifeRouteImport.update({
-  id: '/life',
-  path: '/life',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppManualRoute = AppManualRouteImport.update({
-  id: '/manual',
-  path: '/manual',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOkrsRoute = AppOkrsRouteImport.update({
-  id: '/okrs',
-  path: '/okrs',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppReviewsRoute = AppReviewsRouteImport.update({
-  id: '/reviews',
-  path: '/reviews',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppWheelRoute = AppWheelRouteImport.update({
-  id: '/wheel',
-  path: '/wheel',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppCommunitiesIndexRoute = AppCommunitiesIndexRouteImport.update({
   id: '/communities/',
-  path: '/communities',
+  path: '/communities/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppChallengesIndexRoute = AppChallengesIndexRouteImport.update({
   id: '/challenges/',
-  path: '/challenges',
+  path: '/challenges/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCommunitiesNewRoute = AppCommunitiesNewRouteImport.update({
@@ -217,217 +181,181 @@ const AppChallengesIdRoute = AppChallengesIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/timelog': typeof AppTimelogRoute
-  '/tasks': typeof AppTasksRoute
-  '/profile': typeof AppProfileRoute
-  '/planner': typeof AppPlannerRoute
-  '/partners': typeof AppPartnersRoute
-  '/moderation': typeof AppModerationRoute
-  '/journal': typeof AppJournalRoute
-  '/habits': typeof AppHabitsRoute
-  '/dashboard': typeof AppDashboardRoute
-  '/analytics': typeof AppAnalyticsRoute
   '/accountability': typeof AppAccountabilityRoute
+  '/analytics': typeof AppAnalyticsRoute
   '/coach': typeof AppCoachRoute
-  '/decisions': typeof AppDecisionsRoute
+  '/dashboard': typeof AppDashboardRoute
   '/energy': typeof AppEnergyRoute
   '/focus': typeof AppFocusRoute
   '/goals': typeof AppGoalsRoute
-  '/ideas': typeof AppIdeasRoute
-  '/identity': typeof AppIdentityRoute
-  '/knowledge': typeof AppKnowledgeRoute
-  '/learning': typeof AppLearningRoute
+  '/habits': typeof AppHabitsRoute
+  '/journal': typeof AppJournalRoute
   '/life': typeof AppLifeRoute
   '/manual': typeof AppManualRoute
+  '/moderation': typeof AppModerationRoute
   '/okrs': typeof AppOkrsRoute
+  '/partners': typeof AppPartnersRoute
+  '/planner': typeof AppPlannerRoute
+  '/profile': typeof AppProfileRoute
   '/reviews': typeof AppReviewsRoute
-  '/wheel': typeof AppWheelRoute
-  '/communities/': typeof AppCommunitiesIndexRoute
-  '/challenges/': typeof AppChallengesIndexRoute
-  '/communities/new': typeof AppCommunitiesNewRoute
-  '/communities/$slug': typeof AppCommunitiesSlugRoute
-  '/challenges/new': typeof AppChallengesNewRoute
+  '/tasks': typeof AppTasksRoute
+  '/timelog': typeof AppTimelogRoute
   '/challenges/$id': typeof AppChallengesIdRoute
+  '/challenges/new': typeof AppChallengesNewRoute
+  '/communities/$slug': typeof AppCommunitiesSlugRoute
+  '/communities/new': typeof AppCommunitiesNewRoute
+  '/challenges/': typeof AppChallengesIndexRoute
+  '/communities/': typeof AppCommunitiesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/timelog': typeof AppTimelogRoute
-  '/tasks': typeof AppTasksRoute
-  '/profile': typeof AppProfileRoute
-  '/planner': typeof AppPlannerRoute
-  '/partners': typeof AppPartnersRoute
-  '/moderation': typeof AppModerationRoute
-  '/journal': typeof AppJournalRoute
-  '/habits': typeof AppHabitsRoute
-  '/dashboard': typeof AppDashboardRoute
-  '/analytics': typeof AppAnalyticsRoute
   '/accountability': typeof AppAccountabilityRoute
+  '/analytics': typeof AppAnalyticsRoute
   '/coach': typeof AppCoachRoute
-  '/decisions': typeof AppDecisionsRoute
+  '/dashboard': typeof AppDashboardRoute
   '/energy': typeof AppEnergyRoute
   '/focus': typeof AppFocusRoute
   '/goals': typeof AppGoalsRoute
-  '/ideas': typeof AppIdeasRoute
-  '/identity': typeof AppIdentityRoute
-  '/knowledge': typeof AppKnowledgeRoute
-  '/learning': typeof AppLearningRoute
+  '/habits': typeof AppHabitsRoute
+  '/journal': typeof AppJournalRoute
   '/life': typeof AppLifeRoute
   '/manual': typeof AppManualRoute
+  '/moderation': typeof AppModerationRoute
   '/okrs': typeof AppOkrsRoute
+  '/partners': typeof AppPartnersRoute
+  '/planner': typeof AppPlannerRoute
+  '/profile': typeof AppProfileRoute
   '/reviews': typeof AppReviewsRoute
-  '/wheel': typeof AppWheelRoute
-  '/communities': typeof AppCommunitiesIndexRoute
-  '/challenges': typeof AppChallengesIndexRoute
-  '/communities/new': typeof AppCommunitiesNewRoute
-  '/communities/$slug': typeof AppCommunitiesSlugRoute
-  '/challenges/new': typeof AppChallengesNewRoute
+  '/tasks': typeof AppTasksRoute
+  '/timelog': typeof AppTimelogRoute
   '/challenges/$id': typeof AppChallengesIdRoute
+  '/challenges/new': typeof AppChallengesNewRoute
+  '/communities/$slug': typeof AppCommunitiesSlugRoute
+  '/communities/new': typeof AppCommunitiesNewRoute
+  '/challenges': typeof AppChallengesIndexRoute
+  '/communities': typeof AppCommunitiesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_app/timelog': typeof AppTimelogRoute
-  '/_app/tasks': typeof AppTasksRoute
-  '/_app/profile': typeof AppProfileRoute
-  '/_app/planner': typeof AppPlannerRoute
-  '/_app/partners': typeof AppPartnersRoute
-  '/_app/moderation': typeof AppModerationRoute
-  '/_app/journal': typeof AppJournalRoute
-  '/_app/habits': typeof AppHabitsRoute
-  '/_app/dashboard': typeof AppDashboardRoute
-  '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/accountability': typeof AppAccountabilityRoute
+  '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/coach': typeof AppCoachRoute
-  '/_app/decisions': typeof AppDecisionsRoute
+  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/energy': typeof AppEnergyRoute
   '/_app/focus': typeof AppFocusRoute
   '/_app/goals': typeof AppGoalsRoute
-  '/_app/ideas': typeof AppIdeasRoute
-  '/_app/identity': typeof AppIdentityRoute
-  '/_app/knowledge': typeof AppKnowledgeRoute
-  '/_app/learning': typeof AppLearningRoute
+  '/_app/habits': typeof AppHabitsRoute
+  '/_app/journal': typeof AppJournalRoute
   '/_app/life': typeof AppLifeRoute
   '/_app/manual': typeof AppManualRoute
+  '/_app/moderation': typeof AppModerationRoute
   '/_app/okrs': typeof AppOkrsRoute
+  '/_app/partners': typeof AppPartnersRoute
+  '/_app/planner': typeof AppPlannerRoute
+  '/_app/profile': typeof AppProfileRoute
   '/_app/reviews': typeof AppReviewsRoute
-  '/_app/wheel': typeof AppWheelRoute
-  '/_app/communities/': typeof AppCommunitiesIndexRoute
-  '/_app/challenges/': typeof AppChallengesIndexRoute
-  '/_app/communities/new': typeof AppCommunitiesNewRoute
-  '/_app/communities/$slug': typeof AppCommunitiesSlugRoute
-  '/_app/challenges/new': typeof AppChallengesNewRoute
+  '/_app/tasks': typeof AppTasksRoute
+  '/_app/timelog': typeof AppTimelogRoute
   '/_app/challenges/$id': typeof AppChallengesIdRoute
+  '/_app/challenges/new': typeof AppChallengesNewRoute
+  '/_app/communities/$slug': typeof AppCommunitiesSlugRoute
+  '/_app/communities/new': typeof AppCommunitiesNewRoute
+  '/_app/challenges/': typeof AppChallengesIndexRoute
+  '/_app/communities/': typeof AppCommunitiesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/timelog'
-    | '/tasks'
-    | '/profile'
-    | '/planner'
-    | '/partners'
-    | '/moderation'
-    | '/journal'
-    | '/habits'
-    | '/dashboard'
-    | '/analytics'
     | '/accountability'
+    | '/analytics'
     | '/coach'
-    | '/decisions'
+    | '/dashboard'
     | '/energy'
     | '/focus'
     | '/goals'
-    | '/ideas'
-    | '/identity'
-    | '/knowledge'
-    | '/learning'
+    | '/habits'
+    | '/journal'
     | '/life'
     | '/manual'
+    | '/moderation'
     | '/okrs'
+    | '/partners'
+    | '/planner'
+    | '/profile'
     | '/reviews'
-    | '/wheel'
-    | '/communities/'
-    | '/challenges/'
-    | '/communities/new'
-    | '/communities/$slug'
-    | '/challenges/new'
+    | '/tasks'
+    | '/timelog'
     | '/challenges/$id'
+    | '/challenges/new'
+    | '/communities/$slug'
+    | '/communities/new'
+    | '/challenges/'
+    | '/communities/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/timelog'
-    | '/tasks'
-    | '/profile'
-    | '/planner'
-    | '/partners'
-    | '/moderation'
-    | '/journal'
-    | '/habits'
-    | '/dashboard'
-    | '/analytics'
     | '/accountability'
+    | '/analytics'
     | '/coach'
-    | '/decisions'
+    | '/dashboard'
     | '/energy'
     | '/focus'
     | '/goals'
-    | '/ideas'
-    | '/identity'
-    | '/knowledge'
-    | '/learning'
+    | '/habits'
+    | '/journal'
     | '/life'
     | '/manual'
+    | '/moderation'
     | '/okrs'
+    | '/partners'
+    | '/planner'
+    | '/profile'
     | '/reviews'
-    | '/wheel'
-    | '/communities'
-    | '/challenges'
-    | '/communities/new'
-    | '/communities/$slug'
-    | '/challenges/new'
+    | '/tasks'
+    | '/timelog'
     | '/challenges/$id'
+    | '/challenges/new'
+    | '/communities/$slug'
+    | '/communities/new'
+    | '/challenges'
+    | '/communities'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/auth'
-    | '/_app/timelog'
-    | '/_app/tasks'
-    | '/_app/profile'
-    | '/_app/planner'
-    | '/_app/partners'
-    | '/_app/moderation'
-    | '/_app/journal'
-    | '/_app/habits'
-    | '/_app/dashboard'
-    | '/_app/analytics'
     | '/_app/accountability'
+    | '/_app/analytics'
     | '/_app/coach'
-    | '/_app/decisions'
+    | '/_app/dashboard'
     | '/_app/energy'
     | '/_app/focus'
     | '/_app/goals'
-    | '/_app/ideas'
-    | '/_app/identity'
-    | '/_app/knowledge'
-    | '/_app/learning'
+    | '/_app/habits'
+    | '/_app/journal'
     | '/_app/life'
     | '/_app/manual'
+    | '/_app/moderation'
     | '/_app/okrs'
+    | '/_app/partners'
+    | '/_app/planner'
+    | '/_app/profile'
     | '/_app/reviews'
-    | '/_app/wheel'
-    | '/_app/communities/'
-    | '/_app/challenges/'
-    | '/_app/communities/new'
-    | '/_app/communities/$slug'
-    | '/_app/challenges/new'
+    | '/_app/tasks'
+    | '/_app/timelog'
     | '/_app/challenges/$id'
+    | '/_app/challenges/new'
+    | '/_app/communities/$slug'
+    | '/_app/communities/new'
+    | '/_app/challenges/'
+    | '/_app/communities/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -473,6 +401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTasksRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/reviews': {
+      id: '/_app/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof AppReviewsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/profile': {
       id: '/_app/profile'
       path: '/profile'
@@ -494,11 +429,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPartnersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/okrs': {
+      id: '/_app/okrs'
+      path: '/okrs'
+      fullPath: '/okrs'
+      preLoaderRoute: typeof AppOkrsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/moderation': {
       id: '/_app/moderation'
       path: '/moderation'
       fullPath: '/moderation'
       preLoaderRoute: typeof AppModerationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manual': {
+      id: '/_app/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof AppManualRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/life': {
+      id: '/_app/life'
+      path: '/life'
+      fullPath: '/life'
+      preLoaderRoute: typeof AppLifeRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/journal': {
@@ -515,11 +471,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHabitsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/goals': {
+      id: '/_app/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof AppGoalsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/focus': {
+      id: '/_app/focus'
+      path: '/focus'
+      fullPath: '/focus'
+      preLoaderRoute: typeof AppFocusRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/energy': {
+      id: '/_app/energy'
+      path: '/energy'
+      fullPath: '/energy'
+      preLoaderRoute: typeof AppEnergyRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/coach': {
+      id: '/_app/coach'
+      path: '/coach'
+      fullPath: '/coach'
+      preLoaderRoute: typeof AppCoachRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/analytics': {
@@ -534,104 +518,6 @@ declare module '@tanstack/react-router' {
       path: '/accountability'
       fullPath: '/accountability'
       preLoaderRoute: typeof AppAccountabilityRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/coach': {
-      id: '/_app/coach'
-      path: '/coach'
-      fullPath: '/coach'
-      preLoaderRoute: typeof AppCoachRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/decisions': {
-      id: '/_app/decisions'
-      path: '/decisions'
-      fullPath: '/decisions'
-      preLoaderRoute: typeof AppDecisionsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/energy': {
-      id: '/_app/energy'
-      path: '/energy'
-      fullPath: '/energy'
-      preLoaderRoute: typeof AppEnergyRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/focus': {
-      id: '/_app/focus'
-      path: '/focus'
-      fullPath: '/focus'
-      preLoaderRoute: typeof AppFocusRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/goals': {
-      id: '/_app/goals'
-      path: '/goals'
-      fullPath: '/goals'
-      preLoaderRoute: typeof AppGoalsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/ideas': {
-      id: '/_app/ideas'
-      path: '/ideas'
-      fullPath: '/ideas'
-      preLoaderRoute: typeof AppIdeasRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/identity': {
-      id: '/_app/identity'
-      path: '/identity'
-      fullPath: '/identity'
-      preLoaderRoute: typeof AppIdentityRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/knowledge': {
-      id: '/_app/knowledge'
-      path: '/knowledge'
-      fullPath: '/knowledge'
-      preLoaderRoute: typeof AppKnowledgeRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/learning': {
-      id: '/_app/learning'
-      path: '/learning'
-      fullPath: '/learning'
-      preLoaderRoute: typeof AppLearningRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/life': {
-      id: '/_app/life'
-      path: '/life'
-      fullPath: '/life'
-      preLoaderRoute: typeof AppLifeRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/manual': {
-      id: '/_app/manual'
-      path: '/manual'
-      fullPath: '/manual'
-      preLoaderRoute: typeof AppManualRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/okrs': {
-      id: '/_app/okrs'
-      path: '/okrs'
-      fullPath: '/okrs'
-      preLoaderRoute: typeof AppOkrsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/reviews': {
-      id: '/_app/reviews'
-      path: '/reviews'
-      fullPath: '/reviews'
-      preLoaderRoute: typeof AppReviewsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/wheel': {
-      id: '/_app/wheel'
-      path: '/wheel'
-      fullPath: '/wheel'
-      preLoaderRoute: typeof AppWheelRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/communities/': {
@@ -680,71 +566,59 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppTimelogRoute: typeof AppTimelogRoute
-  AppTasksRoute: typeof AppTasksRoute
-  AppProfileRoute: typeof AppProfileRoute
-  AppPlannerRoute: typeof AppPlannerRoute
-  AppPartnersRoute: typeof AppPartnersRoute
-  AppModerationRoute: typeof AppModerationRoute
-  AppJournalRoute: typeof AppJournalRoute
-  AppHabitsRoute: typeof AppHabitsRoute
-  AppDashboardRoute: typeof AppDashboardRoute
-  AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppAccountabilityRoute: typeof AppAccountabilityRoute
+  AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppCoachRoute: typeof AppCoachRoute
-  AppDecisionsRoute: typeof AppDecisionsRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppEnergyRoute: typeof AppEnergyRoute
   AppFocusRoute: typeof AppFocusRoute
   AppGoalsRoute: typeof AppGoalsRoute
-  AppIdeasRoute: typeof AppIdeasRoute
-  AppIdentityRoute: typeof AppIdentityRoute
-  AppKnowledgeRoute: typeof AppKnowledgeRoute
-  AppLearningRoute: typeof AppLearningRoute
+  AppHabitsRoute: typeof AppHabitsRoute
+  AppJournalRoute: typeof AppJournalRoute
   AppLifeRoute: typeof AppLifeRoute
   AppManualRoute: typeof AppManualRoute
+  AppModerationRoute: typeof AppModerationRoute
   AppOkrsRoute: typeof AppOkrsRoute
+  AppPartnersRoute: typeof AppPartnersRoute
+  AppPlannerRoute: typeof AppPlannerRoute
+  AppProfileRoute: typeof AppProfileRoute
   AppReviewsRoute: typeof AppReviewsRoute
-  AppWheelRoute: typeof AppWheelRoute
-  AppCommunitiesIndexRoute: typeof AppCommunitiesIndexRoute
-  AppChallengesIndexRoute: typeof AppChallengesIndexRoute
-  AppCommunitiesNewRoute: typeof AppCommunitiesNewRoute
-  AppCommunitiesSlugRoute: typeof AppCommunitiesSlugRoute
-  AppChallengesNewRoute: typeof AppChallengesNewRoute
+  AppTasksRoute: typeof AppTasksRoute
+  AppTimelogRoute: typeof AppTimelogRoute
   AppChallengesIdRoute: typeof AppChallengesIdRoute
+  AppChallengesNewRoute: typeof AppChallengesNewRoute
+  AppCommunitiesSlugRoute: typeof AppCommunitiesSlugRoute
+  AppCommunitiesNewRoute: typeof AppCommunitiesNewRoute
+  AppChallengesIndexRoute: typeof AppChallengesIndexRoute
+  AppCommunitiesIndexRoute: typeof AppCommunitiesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppTimelogRoute: AppTimelogRoute,
-  AppTasksRoute: AppTasksRoute,
-  AppProfileRoute: AppProfileRoute,
-  AppPlannerRoute: AppPlannerRoute,
-  AppPartnersRoute: AppPartnersRoute,
-  AppModerationRoute: AppModerationRoute,
-  AppJournalRoute: AppJournalRoute,
-  AppHabitsRoute: AppHabitsRoute,
-  AppDashboardRoute: AppDashboardRoute,
-  AppAnalyticsRoute: AppAnalyticsRoute,
   AppAccountabilityRoute: AppAccountabilityRoute,
+  AppAnalyticsRoute: AppAnalyticsRoute,
   AppCoachRoute: AppCoachRoute,
-  AppDecisionsRoute: AppDecisionsRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppEnergyRoute: AppEnergyRoute,
   AppFocusRoute: AppFocusRoute,
   AppGoalsRoute: AppGoalsRoute,
-  AppIdeasRoute: AppIdeasRoute,
-  AppIdentityRoute: AppIdentityRoute,
-  AppKnowledgeRoute: AppKnowledgeRoute,
-  AppLearningRoute: AppLearningRoute,
+  AppHabitsRoute: AppHabitsRoute,
+  AppJournalRoute: AppJournalRoute,
   AppLifeRoute: AppLifeRoute,
   AppManualRoute: AppManualRoute,
+  AppModerationRoute: AppModerationRoute,
   AppOkrsRoute: AppOkrsRoute,
+  AppPartnersRoute: AppPartnersRoute,
+  AppPlannerRoute: AppPlannerRoute,
+  AppProfileRoute: AppProfileRoute,
   AppReviewsRoute: AppReviewsRoute,
-  AppWheelRoute: AppWheelRoute,
-  AppCommunitiesIndexRoute: AppCommunitiesIndexRoute,
-  AppChallengesIndexRoute: AppChallengesIndexRoute,
-  AppCommunitiesNewRoute: AppCommunitiesNewRoute,
-  AppCommunitiesSlugRoute: AppCommunitiesSlugRoute,
-  AppChallengesNewRoute: AppChallengesNewRoute,
+  AppTasksRoute: AppTasksRoute,
+  AppTimelogRoute: AppTimelogRoute,
   AppChallengesIdRoute: AppChallengesIdRoute,
+  AppChallengesNewRoute: AppChallengesNewRoute,
+  AppCommunitiesSlugRoute: AppCommunitiesSlugRoute,
+  AppCommunitiesNewRoute: AppCommunitiesNewRoute,
+  AppChallengesIndexRoute: AppChallengesIndexRoute,
+  AppCommunitiesIndexRoute: AppCommunitiesIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

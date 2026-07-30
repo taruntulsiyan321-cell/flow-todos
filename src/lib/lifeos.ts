@@ -13,34 +13,6 @@ export const GOAL_HORIZONS = [
 
 export type GoalHorizon = (typeof GOAL_HORIZONS)[number]["key"];
 
-export const LIFE_AREA_DEFAULTS = [
-  { key: "career", label: "Career" },
-  { key: "finance", label: "Finance" },
-  { key: "health", label: "Health" },
-  { key: "relationships", label: "Relationships" },
-  { key: "learning", label: "Learning" },
-  { key: "spirituality", label: "Spirituality" },
-  { key: "productivity", label: "Productivity" },
-  { key: "happiness", label: "Happiness" },
-] as const;
-
-export const IDEA_CATEGORIES = [
-  { key: "startup", label: "Startup Ideas" },
-  { key: "business", label: "Business Ideas" },
-  { key: "content", label: "Content Ideas" },
-  { key: "investment", label: "Investment Ideas" },
-  { key: "personal", label: "Personal Ideas" },
-  { key: "other", label: "Other" },
-] as const;
-
-export const LEARNING_KINDS = [
-  { key: "book", label: "Books" },
-  { key: "course", label: "Courses" },
-  { key: "article", label: "Articles" },
-  { key: "podcast", label: "Podcasts" },
-  { key: "other", label: "Other" },
-] as const;
-
 export const AMBIENT_SOUNDS = [
   { key: "none", label: "Silence" },
   { key: "rain", label: "Rain" },

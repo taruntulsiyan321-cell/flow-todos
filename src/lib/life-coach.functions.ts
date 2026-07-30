@@ -360,64 +360,6 @@ Return JSON {"bestAchievements":[],"biggestMistakes":[],"productivityTrends":"",
     return payload;
   });
 
-export const askKnowledge = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ question: z.string().max(500) }).parse(data))
-  .handler(async ({ context, data }): Promise<{ answer: string; sources: string[] }> => {
-    const question = data.question.trim();
-    if (!question) return { answer: "Ask a question about what you've learned.", sources: [] };
-    const { supabase } = context as any;
-    const q = question.replace(/%/g, "").slice(0, 80);
-    const { data: notes } = await supabase
-      .from("knowledge_notes")
-      .select("title,content,tags,source_type")
-      .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
-      .limit(12);
-    const { data: highlights } = await supabase
-      .from("reading_highlights")
-      .select("quote,note,action_item")
-      .or(`quote.ilike.%${q}%,note.ilike.%${q}%`)
-      .limit(8);
-    const corpus = [
-      ...(notes ?? []).map((n: any) => `[${n.source_type}] ${n.title}: ${n.content.slice(0, 400)}`),
-      ...(highlights ?? []).map((h: any) => `[highlight] ${h.quote} — ${h.note ?? ""}`),
-    ];
-    if (!corpus.length) {
-      return { answer: "I couldn't find matching notes yet. Capture more into your knowledge base.", sources: [] };
-    }
-    const text = await callForgeAI(
-      `Answer using ONLY these notes. Question: ${question}\n\nNotes:\n${corpus.join("\n")}\n\nReturn JSON {"answer":"...","sources":["title or quote snippet"]}`,
-      "JSON only. Be concrete.",
-    );
-    return text
-      ? parseJsonLoose(text, { answer: corpus[0], sources: [] })
-      : { answer: corpus.slice(0, 3).join("\n\n"), sources: [] };
-  });
-
-export const evaluateDecision = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
-  .handler(async ({ context, data }): Promise<{ quality_score: number; ai_evaluation: string }> => {
-    const id = data.id;
-    const { supabase, userId } = context as any;
-    const { data: row } = await supabase.from("decisions").select("*").eq("id", id).eq("user_id", userId).maybeSingle();
-    if (!row) return { quality_score: 5, ai_evaluation: "Decision not found." };
-    const fallback = {
-      quality_score: row.actual_outcome ? 7 : 5,
-      ai_evaluation: "Revisit expected vs actual outcome; update your confidence calibration.",
-    };
-    const text = await callForgeAI(
-      `Evaluate decision quality (Annie Duke Thinking in Bets style). Decision: ${JSON.stringify(row)}. Return JSON {"quality_score":1-10,"ai_evaluation":"..."}`,
-      "JSON only.",
-    );
-    const parsed = text ? parseJsonLoose(text, fallback) : fallback;
-    await supabase
-      .from("decisions")
-      .update({ quality_score: parsed.quality_score, ai_evaluation: parsed.ai_evaluation })
-      .eq("id", id);
-    return parsed;
-  });
-
 export const refreshOperatingManual = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({}).parse(data ?? {}))
