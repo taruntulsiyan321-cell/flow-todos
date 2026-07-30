@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-
 import { useEffect, useState } from "react";
 import { MobileNav } from "@/components/MobileNav";
 import { CommunityPushListener } from "@/components/CommunityPushListener";
+import { DailyScheduleReminders } from "@/components/DailyScheduleReminders";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_app")({
@@ -36,6 +37,7 @@ function AppLayout() {
       style={{ backgroundImage: "var(--gradient-glow)", backgroundRepeat: "no-repeat" }}
     >
       {userId && <CommunityPushListener userId={userId} />}
+      {userId && <DailyScheduleReminders />}
       <div className="mx-auto max-w-2xl px-4 pb-8 pt-6 sm:px-6">
         <Outlet />
       </div>

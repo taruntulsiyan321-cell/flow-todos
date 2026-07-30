@@ -9,6 +9,7 @@ import {
   BookHeart,
   ShieldCheck,
   Clock,
+  CalendarDays,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/life")({
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_app/life")({
 });
 
 const LINKS = [
+  { to: "/schedule", label: "Daily Schedule", desc: "Today's to-dos & reminders", Icon: CalendarDays },
   { to: "/goals", label: "Goal Hierarchy", desc: "Vision → daily tasks", Icon: Target },
   { to: "/coach", label: "AI Life Coach", desc: "Evening reflection", Icon: Sparkles },
   { to: "/reviews", label: "Weekly / Monthly", desc: "GTD reviews", Icon: CalendarRange },

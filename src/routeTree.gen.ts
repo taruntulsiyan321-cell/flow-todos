@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTimelogRouteImport } from './routes/_app.timelog'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as AppReviewsRouteImport } from './routes/_app.reviews'
+import { Route as AppScheduleRouteImport } from './routes/_app.schedule'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppPlannerRouteImport } from './routes/_app.planner'
 import { Route as AppPartnersRouteImport } from './routes/_app.partners'
@@ -65,6 +66,11 @@ const AppTasksRoute = AppTasksRouteImport.update({
 const AppReviewsRoute = AppReviewsRouteImport.update({
   id: '/reviews',
   path: '/reviews',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScheduleRoute = AppScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProfileRoute = AppProfileRouteImport.update({
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/reviews': typeof AppReviewsRoute
+  '/schedule': typeof AppScheduleRoute
   '/tasks': typeof AppTasksRoute
   '/timelog': typeof AppTimelogRoute
   '/challenges/$id': typeof AppChallengesIdRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/reviews': typeof AppReviewsRoute
+  '/schedule': typeof AppScheduleRoute
   '/tasks': typeof AppTasksRoute
   '/timelog': typeof AppTimelogRoute
   '/challenges/$id': typeof AppChallengesIdRoute
@@ -258,6 +266,7 @@ export interface FileRoutesById {
   '/_app/planner': typeof AppPlannerRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/reviews': typeof AppReviewsRoute
+  '/_app/schedule': typeof AppScheduleRoute
   '/_app/tasks': typeof AppTasksRoute
   '/_app/timelog': typeof AppTimelogRoute
   '/_app/challenges/$id': typeof AppChallengesIdRoute
@@ -289,6 +298,7 @@ export interface FileRouteTypes {
     | '/planner'
     | '/profile'
     | '/reviews'
+    | '/schedule'
     | '/tasks'
     | '/timelog'
     | '/challenges/$id'
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
     | '/planner'
     | '/profile'
     | '/reviews'
+    | '/schedule'
     | '/tasks'
     | '/timelog'
     | '/challenges/$id'
@@ -348,6 +359,7 @@ export interface FileRouteTypes {
     | '/_app/planner'
     | '/_app/profile'
     | '/_app/reviews'
+    | '/_app/schedule'
     | '/_app/tasks'
     | '/_app/timelog'
     | '/_app/challenges/$id'
@@ -406,6 +418,13 @@ declare module '@tanstack/react-router' {
       path: '/reviews'
       fullPath: '/reviews'
       preLoaderRoute: typeof AppReviewsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/schedule': {
+      id: '/_app/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof AppScheduleRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/profile': {
@@ -583,6 +602,7 @@ interface AppRouteChildren {
   AppPlannerRoute: typeof AppPlannerRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReviewsRoute: typeof AppReviewsRoute
+  AppScheduleRoute: typeof AppScheduleRoute
   AppTasksRoute: typeof AppTasksRoute
   AppTimelogRoute: typeof AppTimelogRoute
   AppChallengesIdRoute: typeof AppChallengesIdRoute
@@ -611,6 +631,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPlannerRoute: AppPlannerRoute,
   AppProfileRoute: AppProfileRoute,
   AppReviewsRoute: AppReviewsRoute,
+  AppScheduleRoute: AppScheduleRoute,
   AppTasksRoute: AppTasksRoute,
   AppTimelogRoute: AppTimelogRoute,
   AppChallengesIdRoute: AppChallengesIdRoute,

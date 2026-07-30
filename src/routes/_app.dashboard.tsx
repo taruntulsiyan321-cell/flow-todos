@@ -12,6 +12,7 @@ import {
   Target,
   ArrowRight,
   Users,
+  CalendarDays,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { XpBar } from "@/components/XpBar";
@@ -294,6 +295,7 @@ function Dashboard() {
 
       {/* Quick actions */}
       <div className="grid grid-cols-2 gap-3">
+        <QuickLink to="/schedule" icon={<CalendarDays className="h-5 w-5 text-primary" />} label="Schedule" sub="Today's to-dos" />
         <QuickLink to="/habits" icon={<Flame className="h-5 w-5 text-warning" />} label="Habits" sub={`${habitsDone}/${habitsTotal} today`} />
         <QuickLink to="/tasks" icon={<CheckSquare className="h-5 w-5 text-accent" />} label="Quests" sub={`${openTaskCount} open`} />
         <QuickLink to="/goals" icon={<Target className="h-5 w-5 text-primary" />} label="Goals" sub="Vision → daily" />
@@ -370,7 +372,7 @@ function QuickLink({
   label,
   sub,
 }: {
-  to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/goals" | "/coach" | "/focus" | "/life";
+  to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/goals" | "/coach" | "/focus" | "/life" | "/schedule";
   icon: React.ReactNode;
   label: string;
   sub: string;
