@@ -211,6 +211,9 @@ function TasksPage() {
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className={cn("text-sm font-medium text-foreground", t.completed && "line-through")}>{t.title}</p>
+                  {t.notes && (
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{t.notes}</p>
+                  )}
                   <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span className="flex items-center gap-1"><CatIcon className="h-3 w-3" />{cat.label}</span>
                     <span style={{ color: PRIORITY_STYLES[t.priority].color }}>● {PRIORITY_STYLES[t.priority].label}</span>

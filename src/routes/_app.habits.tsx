@@ -10,6 +10,7 @@ import { HabitHeatmap } from "@/components/HabitHeatmap";
 import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
 import { lifeFrom } from "@/lib/lifeos-db";
 import { habitCompletionRate, habitScore } from "@/lib/lifeos";
+import { localISODate } from "@/lib/dates";
 
 export const Route = createFileRoute("/_app/habits")({
   head: () => ({ meta: [{ title: "Habits — Forge" }] }),
@@ -38,7 +39,7 @@ const habitSchema = z.object({
 type HabitsCache = { habits: Habit[]; doneToday: string[]; streaks: Record<string, number>; day: string };
 
 function HabitsPage() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localISODate();
   const cached = cacheGet<HabitsCache>("habits");
   const useCache = cached && cached.day === today;
 
@@ -60,8 +61,8 @@ function HabitsPage() {
       const set = new Set(dates);
       let streak = 0;
       const cur = new Date();
-      if (!set.has(cur.toISOString().slice(0, 10))) cur.setDate(cur.getDate() - 1);
-      while (set.has(cur.toISOString().slice(0, 10))) {
+      if (!set.has(localISODate(cur))) cur.setDate(cur.getDate() - 1);
+      while (set.has(localISODate(cur))) {
         streak++;
         cur.setDate(cur.getDate() - 1);
       }
@@ -212,6 +213,9 @@ function HabitsPage() {
                     {h.is_keystone ? "🔑 " : ""}
                     {h.name}
                   </p>
+                  {h.description && (
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{h.description}</p>
+                  )}
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Flame className="h-3 w-3 text-warning" />

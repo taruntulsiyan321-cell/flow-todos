@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { WeeklyJournalSummary } from "@/components/WeeklyJournalSummary";
 import { dailyPrompt } from "@/lib/journal-prompts";
 import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
+import { formatLocalDay } from "@/lib/dates";
 
 export const Route = createFileRoute("/_app/journal")({
   head: () => ({ meta: [{ title: "Journal — Forge" }] }),
@@ -109,7 +110,10 @@ function JournalPage() {
     }
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
-    if (!u.user) return;
+    if (!u.user) {
+      setSaving(false);
+      return;
+    }
     const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
     const { lifeFrom } = await import("@/lib/lifeos-db");
     const { error } = await lifeFrom("journal_entries").insert({
@@ -305,7 +309,7 @@ function JournalPage() {
                     <div>
                       <p className="text-sm font-semibold text-foreground">{e.title || "Untitled"}</p>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {new Date(e.entry_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                        {formatLocalDay(e.entry_date, { month: "short", day: "numeric", year: "numeric" })}
                       </p>
                     </div>
                   </div>

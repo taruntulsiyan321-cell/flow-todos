@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarRange } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { localISODate, shiftLocalISODate } from "@/lib/dates";
 
 const DAYS = 91; // ~13 weeks
-
-function toISO(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
 
 export function HabitHeatmap() {
   const [counts, setCounts] = useState<Record<string, number>>({});
@@ -15,12 +12,11 @@ export function HabitHeatmap() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const since = new Date();
-      since.setDate(since.getDate() - (DAYS - 1));
+      const since = shiftLocalISODate(localISODate(), -(DAYS - 1));
       const { data } = await supabase
         .from("habit_checkins")
         .select("completed_on")
-        .gte("completed_on", toISO(since));
+        .gte("completed_on", since);
       if (!active) return;
       const map: Record<string, number> = {};
       for (const r of data ?? []) {
@@ -36,19 +32,14 @@ export function HabitHeatmap() {
 
   const days = useMemo(() => {
     const list: { date: string; count: number }[] = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    // Align so the rightmost column ends today; pad start so the grid begins on a Sunday column.
-    const start = new Date(today);
-    start.setDate(today.getDate() - (DAYS - 1));
-    // Pad leading blanks until start day-of-week aligns with column 0 (Sun)
-    const leadPad = start.getDay();
+    const today = localISODate();
+    const startIso = shiftLocalISODate(today, -(DAYS - 1));
+    const start = new Date(startIso + "T12:00:00");
+    const leadPad = start.getDay(); // pad so grid starts on Sunday
     for (let i = 0; i < leadPad; i++) list.push({ date: "", count: -1 });
-    for (let i = 0; i < DAYS; i++) {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      const iso = toISO(d);
-      list.push({ date: iso, count: counts[iso] ?? 0 });
+    for (let i = DAYS - 1; i >= 0; i--) {
+      const date = shiftLocalISODate(today, -i);
+      list.push({ date, count: counts[date] ?? 0 });
     }
     return list;
   }, [counts]);

@@ -7,6 +7,7 @@ import { AMBIENT_SOUNDS } from "@/lib/lifeos";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { localISODate } from "@/lib/dates";
 
 export const Route = createFileRoute("/_app/focus")({
   head: () => ({ meta: [{ title: "Focus — Forge" }] }),
@@ -25,6 +26,28 @@ function FocusPage() {
   const [ambient, setAmbient] = useState("none");
   const [stats, setStats] = useState({ sessions: 0, focusMin: 0 });
   const tick = useRef<number | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
+  const remainingRef = useRef(25 * 60);
+  const minutesRef = useRef(25);
+  const interruptionsRef = useRef(0);
+  const modeRef = useRef<Mode>("pomodoro");
+  const startedAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    remainingRef.current = remaining;
+  }, [remaining]);
+  useEffect(() => {
+    minutesRef.current = minutes;
+  }, [minutes]);
+  useEffect(() => {
+    interruptionsRef.current = interruptions;
+  }, [interruptions]);
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
 
   useEffect(() => {
     void (async () => {
@@ -40,6 +63,46 @@ function FocusPage() {
       });
     })();
   }, [sessionId]);
+
+  const finish = async (completed: boolean) => {
+    setRunning(false);
+    const sid = sessionIdRef.current;
+    if (!sid) return;
+    const planned = minutesRef.current;
+    const rem = remainingRef.current;
+    const elapsedFromClock = startedAtRef.current
+      ? Math.max(1, Math.round((Date.now() - startedAtRef.current) / 60000))
+      : Math.max(1, Math.round((planned * 60 - rem) / 60) || (completed ? planned : 1));
+    const actual = Math.min(planned, elapsedFromClock);
+    await lifeFrom("focus_sessions")
+      .update({
+        completed,
+        actual_minutes: actual,
+        interruptions: interruptionsRef.current,
+        ended_at: new Date().toISOString(),
+      })
+      .eq("id", sid);
+    const { data: u } = await supabase.auth.getUser();
+    if (u.user && completed) {
+      const m = modeRef.current;
+      await lifeFrom("time_logs").insert({
+        user_id: u.user.id,
+        activity: m === "deep_work" ? "Deep work" : "Focus session",
+        category: "Work",
+        work_depth: m === "deep_work" || planned >= 45 ? "deep" : "shallow",
+        start_time: new Date(Date.now() - actual * 60000).toISOString(),
+        end_time: new Date().toISOString(),
+        duration_minutes: actual,
+        interruptions: interruptionsRef.current,
+        focus_session_id: sid,
+        log_date: localISODate(),
+      });
+    }
+    setSessionId(null);
+    sessionIdRef.current = null;
+    startedAtRef.current = null;
+    if (completed) toast.success(`+ focus · ${actual}m logged`);
+  };
 
   useEffect(() => {
     if (!running) {
@@ -82,41 +145,12 @@ function FocusPage() {
       .single();
     if (error) return toast.error(error.message);
     setSessionId(data.id);
+    sessionIdRef.current = data.id;
     setInterruptions(0);
     setRemaining(minutes * 60);
+    startedAtRef.current = Date.now();
     setRunning(true);
     toast.success(mode === "deep_work" ? "Deep work started" : "Focus timer started");
-  };
-
-  const finish = async (completed: boolean) => {
-    setRunning(false);
-    if (!sessionId) return;
-    const actual = Math.max(1, Math.round((minutes * 60 - remaining) / 60) || (completed ? minutes : 1));
-    await lifeFrom("focus_sessions")
-      .update({
-        completed,
-        actual_minutes: actual,
-        interruptions,
-        ended_at: new Date().toISOString(),
-      })
-      .eq("id", sessionId);
-    const { data: u } = await supabase.auth.getUser();
-    if (u.user && completed) {
-      await lifeFrom("time_logs").insert({
-        user_id: u.user.id,
-        activity: mode === "deep_work" ? "Deep work" : "Focus session",
-        category: "Work",
-        work_depth: mode === "deep_work" || minutes >= 45 ? "deep" : "shallow",
-        start_time: new Date(Date.now() - actual * 60000).toISOString(),
-        end_time: new Date().toISOString(),
-        duration_minutes: actual,
-        interruptions,
-        focus_session_id: sessionId,
-        log_date: new Date().toISOString().slice(0, 10),
-      });
-    }
-    setSessionId(null);
-    if (completed) toast.success(`+ focus · ${actual}m logged`);
   };
 
   const mm = String(Math.floor(remaining / 60)).padStart(2, "0");

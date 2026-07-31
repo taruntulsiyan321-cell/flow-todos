@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { localISODate, shiftLocalISODate } from "@/lib/dates";
 
 export const Route = createFileRoute("/_app/planner")({
   head: () => ({ meta: [{ title: "Planner — Forge" }] }),
@@ -33,13 +34,9 @@ const CATEGORIES = [
   { key: "learning", label: "Learning", color: "var(--warning)" },
 ];
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function PlannerPage() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [date, setDate] = useState(todayISO());
+  const [date, setDate] = useState(localISODate());
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
@@ -69,7 +66,10 @@ function PlannerPage() {
     if (!title.trim()) return toast.error("Title required");
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
-    if (!u.user) return;
+    if (!u.user) {
+      setSaving(false);
+      return;
+    }
     const { error } = await supabase.from("planner_events").insert({
       user_id: u.user.id,
       title: title.trim(),
@@ -107,12 +107,11 @@ function PlannerPage() {
 
   const days = useMemo(() => {
     const arr: { iso: string; day: number; weekday: string }[] = [];
-    const base = new Date();
     for (let i = -2; i <= 4; i++) {
-      const d = new Date(base);
-      d.setDate(base.getDate() + i);
+      const iso = shiftLocalISODate(localISODate(), i);
+      const d = new Date(iso + "T12:00:00");
       arr.push({
-        iso: d.toISOString().slice(0, 10),
+        iso,
         day: d.getDate(),
         weekday: d.toLocaleDateString(undefined, { weekday: "short" }),
       });
@@ -239,6 +238,9 @@ function PlannerPage() {
                   <p className={cn("truncate text-sm font-semibold", e.completed ? "text-muted-foreground line-through" : "text-foreground")}>
                     {e.title}
                   </p>
+                  {e.notes && (
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{e.notes}</p>
+                  )}
                   <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: cat.color }} />
                     <span>{cat.label}</span>

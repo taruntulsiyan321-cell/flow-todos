@@ -21,6 +21,7 @@ import { ActivityLog } from "@/components/ActivityLog";
 import { SmartReminders } from "@/components/SmartReminders";
 import { rankFor } from "@/lib/xp";
 import { cacheGet, cacheSet } from "@/lib/page-cache";
+import { localISODate } from "@/lib/dates";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Forge" }] }),
@@ -86,7 +87,7 @@ function Dashboard() {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
       if (!uid) return;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = localISODate();
 
       const [profileRes, habitsRes, checkinsRes, todayTasksRes, openTasksRes] = await Promise.all([
         supabase

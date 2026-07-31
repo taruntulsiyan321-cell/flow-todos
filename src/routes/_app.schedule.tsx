@@ -14,6 +14,7 @@ import {
   requestNotificationPermission,
   setNotificationsEnabled,
 } from "@/lib/notifications";
+import { formatLocalDay, localISODate, shiftLocalISODate } from "@/lib/dates";
 
 export const Route = createFileRoute("/_app/schedule")({
   head: () => ({ meta: [{ title: "Daily Schedule — Forge" }] }),
@@ -31,12 +32,9 @@ type DailyTodo = {
   sort_order: number;
 };
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function SchedulePage() {
-  const [date, setDate] = useState(todayISO());
+  const today = localISODate();
+  const [date, setDate] = useState(today);
   const [todos, setTodos] = useState<DailyTodo[]>([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
@@ -59,9 +57,7 @@ function SchedulePage() {
   };
 
   const loadHistory = async () => {
-    const since = new Date();
-    since.setDate(since.getDate() - 13);
-    const sinceStr = since.toISOString().slice(0, 10);
+    const sinceStr = shiftLocalISODate(localISODate(), -13);
     const { data } = await lifeFrom("daily_todos")
       .select("scheduled_date,completed")
       .gte("scheduled_date", sinceStr)
@@ -88,7 +84,7 @@ function SchedulePage() {
 
   // In-tab reminders for today's incomplete todos with remind_at
   useEffect(() => {
-    if (!notifyOn || date !== todayISO()) return;
+    if (!notifyOn || date !== today) return;
     const fired = new Set<string>();
     const tick = () => {
       if (!notificationsEnabled()) return;
@@ -109,19 +105,16 @@ function SchedulePage() {
   }, [todos, notifyOn, date]);
 
   const days = useMemo(() => {
-    const arr: { iso: string; day: number; weekday: string }[] = [];
-    const base = new Date();
-    for (let i = -3; i <= 3; i++) {
-      const d = new Date(base);
-      d.setDate(base.getDate() + i);
-      arr.push({
-        iso: d.toISOString().slice(0, 10),
+    return Array.from({ length: 7 }, (_, i) => {
+      const iso = shiftLocalISODate(date, i - 3);
+      const d = new Date(iso + "T12:00:00");
+      return {
+        iso,
         day: d.getDate(),
         weekday: d.toLocaleDateString(undefined, { weekday: "short" }),
-      });
-    }
-    return arr;
-  }, []);
+      };
+    });
+  }, [date]);
 
   const doneCount = todos.filter((t) => t.completed).length;
 
@@ -186,9 +179,7 @@ function SchedulePage() {
   };
 
   const copyYesterday = async () => {
-    const y = new Date(date + "T12:00:00");
-    y.setDate(y.getDate() - 1);
-    const yIso = y.toISOString().slice(0, 10);
+    const yIso = shiftLocalISODate(date, -1);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
     const { data, error } = await lifeFrom("daily_todos")
@@ -253,7 +244,7 @@ function SchedulePage() {
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         {days.map((d) => {
           const active = d.iso === date;
-          const isToday = d.iso === todayISO();
+          const isToday = d.iso === today;
           return (
             <button
               key={d.iso}
@@ -269,6 +260,20 @@ function SchedulePage() {
             </button>
           );
         })}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Input
+          type="date"
+          value={date}
+          onChange={(e) => e.target.value && setDate(e.target.value)}
+          className="h-9 w-40"
+        />
+        {date !== today && (
+          <button onClick={() => setDate(today)} className="text-xs text-primary underline">
+            Jump to today
+          </button>
+        )}
       </div>
 
       <div
@@ -380,7 +385,7 @@ function SchedulePage() {
                   className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-sm hover:border-primary/40"
                 >
                   <span>
-                    {new Date(h.date + "T12:00:00").toLocaleDateString(undefined, {
+                    {formatLocalDay(h.date, {
                       weekday: "short",
                       month: "short",
                       day: "numeric",

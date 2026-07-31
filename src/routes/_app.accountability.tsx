@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
+import { localISODate } from "@/lib/dates";
+
 export const Route = createFileRoute("/_app/accountability")({
   head: () => ({ meta: [{ title: "Accountability — Forge" }] }),
   component: AccountabilityPage,
@@ -57,7 +59,7 @@ function AccountabilityPage() {
     const { error } = await lifeFrom("accountability_checkins").upsert(
       {
         user_id: u.user.id,
-        checkin_date: new Date().toISOString().slice(0, 10),
+        checkin_date: localISODate(),
         kept_promises: kept,
         promises_text: promises.trim() || null,
         why_not: kept ? null : whyNot.trim() || null,
@@ -134,7 +136,10 @@ function AccountabilityPage() {
                 {r.kept_promises ? "Kept" : "Missed"}
               </span>
             </div>
-            {r.why_not && <p className="text-xs text-muted-foreground">{r.why_not}</p>}
+            {r.promises_text && (
+              <p className="mt-1 text-xs text-foreground">{r.promises_text}</p>
+            )}
+            {r.why_not && <p className="text-xs text-muted-foreground">Why not: {r.why_not}</p>}
           </li>
         ))}
       </ul>

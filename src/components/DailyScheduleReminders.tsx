@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { lifeFrom } from "@/lib/lifeos-db";
 import { fireNotification, notificationsEnabled } from "@/lib/notifications";
+import { localISODate } from "@/lib/dates";
 
 /**
  * While the app is open, nudge for today's incomplete schedule items at their remind_at time.
@@ -21,7 +22,7 @@ export function DailyScheduleReminders() {
 
     const check = async () => {
       if (!notificationsEnabled()) return;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = localISODate();
       const now = new Date();
       const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       const { data } = await lifeFrom("daily_todos")

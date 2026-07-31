@@ -52,26 +52,23 @@ export function contributionPercent(
 }
 
 export function weekBounds(d = new Date()) {
-  const start = new Date(d);
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const day = start.getDay();
   const diff = day === 0 ? -6 : 1 - day;
   start.setDate(start.getDate() + diff);
-  start.setHours(0, 0, 0, 0);
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
-  return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
-  };
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const fmt = (x: Date) => `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`;
+  return { start: fmt(start), end: fmt(end) };
 }
 
 export function monthBounds(d = new Date()) {
   const start = new Date(d.getFullYear(), d.getMonth(), 1);
   const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-  return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
-  };
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const fmt = (x: Date) => `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`;
+  return { start: fmt(start), end: fmt(end) };
 }
 
 export function mostProductiveHour(

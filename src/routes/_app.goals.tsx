@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Target, Plus, ChevronRight, Trash2, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { lifeFrom } from "@/lib/lifeos-db";
+import { localISODate } from "@/lib/dates";
 import { GOAL_HORIZONS, contributionPercent, type GoalHorizon } from "@/lib/lifeos";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,7 @@ function GoalsPage() {
     setGoals((data as Goal[]) ?? []);
     setLoading(false);
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localISODate();
     const monthly = ((data as Goal[]) ?? []).find((g) => g.horizon === "monthly" && g.status === "active");
     const { data: tasks } = await lifeFrom("tasks")
       .select("id,completed,goal_id")
