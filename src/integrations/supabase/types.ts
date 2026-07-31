@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      accountability_checkins: {
+        Row: {
+          checkin_date: string
+          created_at: string
+          excuse_tags: string[] | null
+          id: string
+          kept_promises: boolean | null
+          promises_text: string | null
+          user_id: string
+          why_not: string | null
+        }
+        Insert: {
+          checkin_date?: string
+          created_at?: string
+          excuse_tags?: string[] | null
+          id?: string
+          kept_promises?: boolean | null
+          promises_text?: string | null
+          user_id: string
+          why_not?: string | null
+        }
+        Update: {
+          checkin_date?: string
+          created_at?: string
+          excuse_tags?: string[] | null
+          id?: string
+          kept_promises?: boolean | null
+          promises_text?: string | null
+          user_id?: string
+          why_not?: string | null
+        }
+        Relationships: []
+      }
       achievements: {
         Row: {
           badge_key: string
@@ -31,6 +64,42 @@ export type Database = {
           badge_key?: string
           id?: string
           unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_memories: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          importance: number
+          last_reinforced_at: string | null
+          source: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          importance?: number
+          last_reinforced_at?: string | null
+          source?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          importance?: number
+          last_reinforced_at?: string | null
+          source?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -509,6 +578,281 @@ export type Database = {
           },
         ]
       }
+      daily_todos: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          remind_at: string | null
+          scheduled_date: string
+          sort_order: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          remind_at?: string | null
+          scheduled_date?: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          remind_at?: string | null
+          scheduled_date?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      decisions: {
+        Row: {
+          actual_outcome: string | null
+          ai_evaluation: string | null
+          confidence: number | null
+          created_at: string
+          decided_on: string
+          decision: string
+          expected_outcome: string | null
+          id: string
+          outcome_date: string | null
+          quality_score: number | null
+          reason: string | null
+          risks: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_outcome?: string | null
+          ai_evaluation?: string | null
+          confidence?: number | null
+          created_at?: string
+          decided_on?: string
+          decision: string
+          expected_outcome?: string | null
+          id?: string
+          outcome_date?: string | null
+          quality_score?: number | null
+          reason?: string | null
+          risks?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_outcome?: string | null
+          ai_evaluation?: string | null
+          confidence?: number | null
+          created_at?: string
+          decided_on?: string
+          decision?: string
+          expected_outcome?: string | null
+          id?: string
+          outcome_date?: string | null
+          quality_score?: number | null
+          reason?: string | null
+          risks?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      energy_logs: {
+        Row: {
+          created_at: string
+          energy: number
+          id: string
+          log_date: string
+          logged_at: string
+          mood: number | null
+          motivation: number | null
+          note: string | null
+          sleep_hours: number | null
+          stress: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          energy: number
+          id?: string
+          log_date?: string
+          logged_at?: string
+          mood?: number | null
+          motivation?: number | null
+          note?: string | null
+          sleep_hours?: number | null
+          stress?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          energy?: number
+          id?: string
+          log_date?: string
+          logged_at?: string
+          mood?: number | null
+          motivation?: number | null
+          note?: string | null
+          sleep_hours?: number | null
+          stress?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      focus_sessions: {
+        Row: {
+          actual_minutes: number | null
+          ambient_sound: string | null
+          completed: boolean
+          created_at: string
+          ended_at: string | null
+          goal_id: string | null
+          id: string
+          interruptions: number
+          mode: string
+          notes: string | null
+          planned_minutes: number
+          started_at: string
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          actual_minutes?: number | null
+          ambient_sound?: string | null
+          completed?: boolean
+          created_at?: string
+          ended_at?: string | null
+          goal_id?: string | null
+          id?: string
+          interruptions?: number
+          mode?: string
+          notes?: string | null
+          planned_minutes?: number
+          started_at?: string
+          task_id?: string | null
+          user_id: string
+        }
+        Update: {
+          actual_minutes?: number | null
+          ambient_sound?: string | null
+          completed?: boolean
+          created_at?: string
+          ended_at?: string | null
+          goal_id?: string | null
+          id?: string
+          interruptions?: number
+          mode?: string
+          notes?: string | null
+          planned_minutes?: number
+          started_at?: string
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "focus_sessions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "focus_sessions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_value: number | null
+          description: string | null
+          horizon: string
+          id: string
+          life_area: string | null
+          parent_id: string | null
+          progress: number
+          sort_order: number
+          start_date: string | null
+          status: string
+          target_date: string | null
+          target_value: number | null
+          title: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          horizon: string
+          id?: string
+          life_area?: string | null
+          parent_id?: string | null
+          progress?: number
+          sort_order?: number
+          start_date?: string | null
+          status?: string
+          target_date?: string | null
+          target_value?: number | null
+          title: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          horizon?: string
+          id?: string
+          life_area?: string | null
+          parent_id?: string | null
+          progress?: number
+          sort_order?: number
+          start_date?: string | null
+          status?: string
+          target_date?: string | null
+          target_value?: number | null
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       habit_checkins: {
         Row: {
           completed_on: string
@@ -547,10 +891,16 @@ export type Database = {
           color: string
           created_at: string
           description: string | null
+          difficulty: number
           frequency: string
           icon: string
           id: string
+          identity_statement: string | null
+          is_keystone: boolean
+          life_area: string | null
           name: string
+          reminder_time: string | null
+          stack_after_habit_id: string | null
           target_per_period: number
           updated_at: string
           user_id: string
@@ -561,10 +911,16 @@ export type Database = {
           color?: string
           created_at?: string
           description?: string | null
+          difficulty?: number
           frequency?: string
           icon?: string
           id?: string
+          identity_statement?: string | null
+          is_keystone?: boolean
+          life_area?: string | null
           name: string
+          reminder_time?: string | null
+          stack_after_habit_id?: string | null
           target_per_period?: number
           updated_at?: string
           user_id: string
@@ -575,24 +931,121 @@ export type Database = {
           color?: string
           created_at?: string
           description?: string | null
+          difficulty?: number
           frequency?: string
           icon?: string
           id?: string
+          identity_statement?: string | null
+          is_keystone?: boolean
+          life_area?: string | null
           name?: string
+          reminder_time?: string | null
+          stack_after_habit_id?: string | null
           target_per_period?: number
           updated_at?: string
           user_id?: string
           xp_reward?: number
         }
+        Relationships: [
+          {
+            foreignKeyName: "habits_stack_after_habit_id_fkey"
+            columns: ["stack_after_habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ideas: {
+        Row: {
+          body: string | null
+          category: string
+          cluster_key: string | null
+          created_at: string
+          id: string
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          category?: string
+          cluster_key?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          cluster_key?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
         Relationships: []
+      }
+      identity_statements: {
+        Row: {
+          active: boolean
+          created_at: string
+          evidence_count: number
+          id: string
+          linked_habit_id: string | null
+          statement: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          evidence_count?: number
+          id?: string
+          linked_habit_id?: string | null
+          statement: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          evidence_count?: number
+          id?: string
+          linked_habit_id?: string | null
+          statement?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_statements_linked_habit_id_fkey"
+            columns: ["linked_habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       journal_entries: {
         Row: {
+          ai_analysis: string | null
           content: string
           created_at: string
           entry_date: string
+          entry_type: string
           id: string
           mood: number | null
+          structured: Json
           tags: string[] | null
           title: string | null
           updated_at: string
@@ -600,11 +1053,14 @@ export type Database = {
           xp_reward: number
         }
         Insert: {
+          ai_analysis?: string | null
           content: string
           created_at?: string
           entry_date?: string
+          entry_type?: string
           id?: string
           mood?: number | null
+          structured?: Json
           tags?: string[] | null
           title?: string | null
           updated_at?: string
@@ -612,16 +1068,208 @@ export type Database = {
           xp_reward?: number
         }
         Update: {
+          ai_analysis?: string | null
           content?: string
           created_at?: string
           entry_date?: string
+          entry_type?: string
           id?: string
           mood?: number | null
+          structured?: Json
           tags?: string[] | null
           title?: string | null
           updated_at?: string
           user_id?: string
           xp_reward?: number
+        }
+        Relationships: []
+      }
+      knowledge_notes: {
+        Row: {
+          content: string
+          created_at: string
+          embedding_hint: string | null
+          id: string
+          source_id: string | null
+          source_type: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedding_hint?: string | null
+          id?: string
+          source_id?: string | null
+          source_type?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedding_hint?: string | null
+          id?: string
+          source_id?: string | null
+          source_type?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      learning_items: {
+        Row: {
+          author: string | null
+          completed_on: string | null
+          cover_url: string | null
+          created_at: string
+          id: string
+          key_learnings: string | null
+          kind: string
+          progress: number
+          started_on: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          author?: string | null
+          completed_on?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          key_learnings?: string | null
+          kind: string
+          progress?: number
+          started_on?: string | null
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          author?: string | null
+          completed_on?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          key_learnings?: string | null
+          kind?: string
+          progress?: number
+          started_on?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      life_area_logs: {
+        Row: {
+          area_key: string
+          created_at: string
+          id: string
+          logged_on: string
+          note: string | null
+          score: number
+          user_id: string
+        }
+        Insert: {
+          area_key: string
+          created_at?: string
+          id?: string
+          logged_on?: string
+          note?: string | null
+          score: number
+          user_id: string
+        }
+        Update: {
+          area_key?: string
+          created_at?: string
+          id?: string
+          logged_on?: string
+          note?: string | null
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      life_areas: {
+        Row: {
+          area_key: string
+          id: string
+          label: string
+          notes: string | null
+          score: number
+          target_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          area_key: string
+          id?: string
+          label: string
+          notes?: string | null
+          score?: number
+          target_score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          area_key?: string
+          id?: string
+          label?: string
+          notes?: string | null
+          score?: number
+          target_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      life_reviews: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          period: string
+          period_end: string
+          period_start: string
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          period: string
+          period_end: string
+          period_start: string
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          period?: string
+          period_end?: string
+          period_start?: string
+          score?: number | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -681,6 +1329,119 @@ export type Database = {
           original_text?: string
           severity?: string
           surface?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      okr_key_results: {
+        Row: {
+          created_at: string
+          current_value: number
+          id: string
+          okr_id: string
+          target_value: number
+          title: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          okr_id: string
+          target_value?: number
+          title: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          okr_id?: string
+          target_value?: number
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okr_key_results_okr_id_fkey"
+            columns: ["okr_id"]
+            isOneToOne: false
+            referencedRelation: "okrs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      okrs: {
+        Row: {
+          created_at: string
+          id: string
+          life_area: string | null
+          objective: string
+          progress: number
+          quarter: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          life_area?: string | null
+          objective: string
+          progress?: number
+          quarter: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          life_area?: string | null
+          objective?: string
+          progress?: number
+          quarter?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      operating_manual: {
+        Row: {
+          active: boolean
+          confidence: number
+          created_at: string
+          evidence_count: number
+          id: string
+          insight: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          confidence?: number
+          created_at?: string
+          evidence_count?: number
+          id?: string
+          insight: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          confidence?: number
+          created_at?: string
+          evidence_count?: number
+          id?: string
+          insight?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -838,6 +1599,56 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_highlights: {
+        Row: {
+          action_item: string | null
+          applied: boolean
+          applied_at: string | null
+          created_at: string
+          id: string
+          learning_item_id: string | null
+          location: string | null
+          note: string | null
+          quote: string
+          reminded_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_item?: string | null
+          applied?: boolean
+          applied_at?: string | null
+          created_at?: string
+          id?: string
+          learning_item_id?: string | null
+          location?: string | null
+          note?: string | null
+          quote: string
+          reminded_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_item?: string | null
+          applied?: boolean
+          applied_at?: string | null
+          created_at?: string
+          id?: string
+          learning_item_id?: string | null
+          location?: string | null
+          note?: string | null
+          quote?: string
+          reminded_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_highlights_learning_item_id_fkey"
+            columns: ["learning_item_id"]
+            isOneToOne: false
+            referencedRelation: "learning_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           category: string
@@ -845,8 +1656,13 @@ export type Database = {
           completed_at: string | null
           created_at: string
           due_date: string | null
+          estimated_minutes: number | null
+          goal_id: string | null
           id: string
+          last_postpone_reason: string | null
+          life_area: string | null
           notes: string | null
+          postponed_count: number
           priority: string
           title: string
           updated_at: string
@@ -859,8 +1675,13 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           due_date?: string | null
+          estimated_minutes?: number | null
+          goal_id?: string | null
           id?: string
+          last_postpone_reason?: string | null
+          life_area?: string | null
           notes?: string | null
+          postponed_count?: number
           priority?: string
           title: string
           updated_at?: string
@@ -873,57 +1694,93 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           due_date?: string | null
+          estimated_minutes?: number | null
+          goal_id?: string | null
           id?: string
+          last_postpone_reason?: string | null
+          life_area?: string | null
           notes?: string | null
+          postponed_count?: number
           priority?: string
           title?: string
           updated_at?: string
           user_id?: string
           xp_reward?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tasks_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_logs: {
         Row: {
           activity: string
           category: string | null
+          context_switches: number
           created_at: string
           duration_minutes: number | null
           end_time: string | null
+          energy_at_start: number | null
+          focus_session_id: string | null
           id: string
+          interruptions: number
           log_date: string
           notes: string | null
           start_time: string
           updated_at: string
           user_id: string
+          work_depth: string | null
         }
         Insert: {
           activity: string
           category?: string | null
+          context_switches?: number
           created_at?: string
           duration_minutes?: number | null
           end_time?: string | null
+          energy_at_start?: number | null
+          focus_session_id?: string | null
           id?: string
+          interruptions?: number
           log_date?: string
           notes?: string | null
           start_time?: string
           updated_at?: string
           user_id: string
+          work_depth?: string | null
         }
         Update: {
           activity?: string
           category?: string | null
+          context_switches?: number
           created_at?: string
           duration_minutes?: number | null
           end_time?: string | null
+          energy_at_start?: number | null
+          focus_session_id?: string | null
           id?: string
+          interruptions?: number
           log_date?: string
           notes?: string | null
           start_time?: string
           updated_at?: string
           user_id?: string
+          work_depth?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "time_logs_focus_session_id_fkey"
+            columns: ["focus_session_id"]
+            isOneToOne: false
+            referencedRelation: "focus_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       xp_ledger: {
         Row: {
@@ -1058,6 +1915,7 @@ export type Database = {
           slug: string
         }[]
       }
+      lifeos_enable_owner_rls: { Args: { p_table: string }; Returns: undefined }
       moderation_normalize: { Args: { p: string }; Returns: string }
       moderation_repeat_offenders: {
         Args: { p_days?: number }
