@@ -5,7 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatLocalDay, localISODate, shiftLocalISODate } from "@/lib/dates";
+import {
+  combineLocalDateAndTime,
+  formatLocalDay,
+  isCalendarDay,
+  localISODate,
+  shiftLocalISODate,
+} from "@/lib/dates";
 import { lifeFrom } from "@/lib/lifeos-db";
 
 export const Route = createFileRoute("/_app/timelog")({
@@ -131,10 +137,16 @@ function TimeLogPage() {
   }) => {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return { error: { message: "Not signed in" } };
+    // Always persist the selected calendar day — never UTC date of start_time.
+    // (4:30 AM IST == previous day in UTC; that must not move the entry.)
+    const logDate = isCalendarDay(payload.log_date)
+      ? payload.log_date
+      : localISODate(new Date(payload.start_time));
     const depth = CATEGORIES.find((c) => c.label === payload.category)?.depth ?? "shallow";
     const row = {
       user_id: u.user.id,
       ...payload,
+      log_date: logDate,
       notes: payload.notes ?? null,
       work_depth: depth,
     };
@@ -145,7 +157,7 @@ function TimeLogPage() {
       user_id: u.user.id,
       activity: payload.activity,
       category: payload.category,
-      log_date: payload.log_date,
+      log_date: logDate,
       start_time: payload.start_time,
       end_time: payload.end_time,
       duration_minutes: payload.duration_minutes,
@@ -215,19 +227,20 @@ function TimeLogPage() {
   };
 
   const submitManual = async () => {
-    const [hh, mm] = manualTime.split(":").map(Number);
-    if (Number.isNaN(hh) || Number.isNaN(mm)) return toast.error("Pick a start time");
-    const [y, mo, d] = date.split("-").map(Number);
-    const start = new Date(y, mo - 1, d, hh, mm, 0, 0);
+    if (!isCalendarDay(date)) return toast.error("Pick a valid day");
+    const start = combineLocalDateAndTime(date, manualTime);
+    if (Number.isNaN(start.getTime())) return toast.error("Pick a start time");
     const label = manualActivity.trim() || manualCat;
     const notes = manualActivity.trim() && manualActivity.trim() !== manualCat ? manualActivity.trim() : null;
 
+    // log_date MUST be the selected day (`date`), not start.toISOString().slice(0,10).
+    // Example: Today 4:30 AM IST → UTC yesterday — still belongs on today.
     if (!manualEnd) {
       setSaving(manualCat);
       const { error } = await insertEntry({
         activity: label,
         category: manualCat,
-        log_date: date, // keep selected calendar day
+        log_date: date,
         start_time: start.toISOString(),
         end_time: start.toISOString(),
         duration_minutes: 0,
@@ -242,9 +255,8 @@ function TimeLogPage() {
       return;
     }
 
-    const [eh, em] = manualEnd.split(":").map(Number);
-    if (Number.isNaN(eh) || Number.isNaN(em)) return toast.error("Pick an end time");
-    const end = new Date(y, mo - 1, d, eh, em, 0, 0);
+    const end = combineLocalDateAndTime(date, manualEnd);
+    if (Number.isNaN(end.getTime())) return toast.error("Pick an end time");
     if (end.getTime() <= start.getTime()) return toast.error("End must be after start");
     const dur = Math.round((end.getTime() - start.getTime()) / 60000);
     setSaving(manualCat);

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateAnalyticsInsights } from "@/lib/analytics-insights.functions";
+import { localISODate } from "@/lib/dates";
 
 export const Route = createFileRoute("/_app/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Forge" }] }),
@@ -24,7 +25,7 @@ const RANGE_DAYS: Record<Range, number> = { "7d": 7, "30d": 30, "90d": 90, "365d
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function isoDay(d: Date) {
-  return d.toISOString().slice(0, 10);
+  return localISODate(d);
 }
 function lastNDays(n: number) {
   const out: string[] = [];
