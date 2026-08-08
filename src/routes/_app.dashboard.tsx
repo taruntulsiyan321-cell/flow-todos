@@ -307,6 +307,9 @@ function Dashboard() {
         <QuickLink to="/analytics" icon={<BarChart3 className="h-5 w-5 text-primary" />} label="Stats" sub="Life analytics" />
       </div>
 
+      {/* Install to home screen (hidden once installed / dismissed) */}
+      <InstallPrompt />
+
       {/* Smart nudges (with notification toggle) */}
       <SmartReminders />
 
