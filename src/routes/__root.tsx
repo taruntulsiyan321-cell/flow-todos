@@ -40,28 +40,41 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      {
+        name: "viewport",
+        content:
+          "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
+      },
       { name: "theme-color", content: "#1a0f2e" },
-      { title: "LEVEL UP" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Forge" },
+      { title: "Forge — Habits, Quests & Daily Log" },
       {
         name: "description",
-        content: "Forge is a gamified habit tracker, journal, and quest log for daily progress.",
+        content:
+          "Forge turns daily discipline into a game: track habits, log your time, journal, and earn XP as you level up.",
       },
-      { property: "og:title", content: "LEVEL UP" },
+      { property: "og:title", content: "Forge — Habits, Quests & Daily Log" },
       {
         property: "og:description",
         content: "Build streaks, complete quests, earn XP. Daily discipline made addictive.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:title", content: "LEVEL UP" },
-      { name: "description", content: "Flow Todos is a clean and persistent to-do list application." },
-      { property: "og:description", content: "Flow Todos is a clean and persistent to-do list application." },
-      { name: "twitter:description", content: "Flow Todos is a clean and persistent to-do list application." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/849d181a-3f76-423b-976d-8ef4a6c0425b/id-preview-75e89641--b196a075-dc7e-48d0-9685-49b592415cda.lovable.app-1778031926658.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/849d181a-3f76-423b-976d-8ef4a6c0425b/id-preview-75e89641--b196a075-dc7e-48d0-9685-49b592415cda.lovable.app-1778031926658.png" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Forge — Habits, Quests & Daily Log" },
+      {
+        name: "twitter:description",
+        content: "Build streaks, complete quests, earn XP. Daily discipline made addictive.",
+      },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
