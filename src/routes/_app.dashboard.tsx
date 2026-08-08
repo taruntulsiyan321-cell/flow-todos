@@ -19,6 +19,7 @@ import { XpBar } from "@/components/XpBar";
 import { AiCoachCard } from "@/components/AiCoachCard";
 import { ActivityLog } from "@/components/ActivityLog";
 import { SmartReminders } from "@/components/SmartReminders";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { rankFor } from "@/lib/xp";
 import { cacheGet, cacheSet } from "@/lib/page-cache";
 import { localISODate } from "@/lib/dates";
