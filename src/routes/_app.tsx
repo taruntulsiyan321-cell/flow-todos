@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { MobileNav } from "@/components/MobileNav";
 import { CommunityPushListener } from "@/components/CommunityPushListener";
 import { DailyScheduleReminders } from "@/components/DailyScheduleReminders";
+import { AppSplash } from "@/components/AppSplash";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_app")({
@@ -13,6 +14,10 @@ export const Route = createFileRoute("/_app")({
       throw redirect({ to: "/auth", search: { mode: "signin" as const } });
     }
   },
+  // Never leave the user staring at a blank screen while auth resolves.
+  pendingComponent: () => <AppSplash />,
+  pendingMs: 300,
+  pendingMinMs: 200,
   component: AppLayout,
 });
 

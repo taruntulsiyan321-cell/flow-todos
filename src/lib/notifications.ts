@@ -39,8 +39,53 @@ export async function requestNotificationPermission(): Promise<NotifyPermission>
 export function fireNotification(title: string, body: string) {
   if (!notificationsEnabled()) return;
   try {
-    new Notification(title, { body, icon: "/favicon.ico", tag: "forge-reminder" });
+    new Notification(title, { body, icon: "/app-icon-192.png", tag: "forge-reminder" });
   } catch {
     /* ignore */
   }
+}
+
+/* ---------- Install / platform awareness (mobile notification support) ---------- */
+
+/** True when running as an installed app (home-screen / standalone window). */
+export function isStandalone() {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    // iOS Safari
+    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+  );
+}
+
+export function isIOS() {
+  if (typeof navigator === "undefined") return false;
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && (navigator as unknown as { maxTouchPoints: number }).maxTouchPoints > 1)
+  );
+}
+
+export function isMobile() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPad|iPhone|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+/**
+ * Plain-language explanation of what this device can actually do with
+ * reminders, so the UI never promises something the browser won't deliver.
+ */
+export function notifySupportNote(): string | null {
+  if (getNotifyPermission() === "unsupported") {
+    if (isIOS() && !isStandalone()) {
+      return "On iPhone, reminders only work after you add Forge to your Home Screen.";
+    }
+    return "This browser doesn't support notifications.";
+  }
+  if (isIOS() && !isStandalone()) {
+    return "Add Forge to your Home Screen for reliable iPhone reminders.";
+  }
+  if (isMobile() && !isStandalone()) {
+    return "Install Forge to your home screen so reminders keep working.";
+  }
+  return null;
 }

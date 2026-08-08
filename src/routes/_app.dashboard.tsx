@@ -19,6 +19,7 @@ import { XpBar } from "@/components/XpBar";
 import { AiCoachCard } from "@/components/AiCoachCard";
 import { ActivityLog } from "@/components/ActivityLog";
 import { SmartReminders } from "@/components/SmartReminders";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { rankFor } from "@/lib/xp";
 import { cacheGet, cacheSet } from "@/lib/page-cache";
 import { localISODate } from "@/lib/dates";
@@ -306,6 +307,9 @@ function Dashboard() {
         <QuickLink to="/journal" icon={<BookOpen className="h-5 w-5 text-success" />} label="Journal" sub="Morning & evening" />
         <QuickLink to="/analytics" icon={<BarChart3 className="h-5 w-5 text-primary" />} label="Stats" sub="Life analytics" />
       </div>
+
+      {/* Install to home screen (hidden once installed / dismissed) */}
+      <InstallPrompt />
 
       {/* Smart nudges (with notification toggle) */}
       <SmartReminders />

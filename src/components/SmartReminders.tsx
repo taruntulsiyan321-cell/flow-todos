@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Bell, BellOff, Sparkles, AlertTriangle, Info, Trophy } from "lucide-react";
+import { Bell, BellOff, Sparkles, AlertTriangle, Info, Trophy, Smartphone } from "lucide-react";
 import { buildSmartReminders, type SmartReminder } from "@/lib/reminders";
 import {
   fireNotification,
   getNotifyPermission,
   notificationsEnabled,
+  notifySupportNote,
   requestNotificationPermission,
   setNotificationsEnabled,
 } from "@/lib/notifications";
@@ -21,6 +22,11 @@ export function SmartReminders() {
   const [loading, setLoading] = useState(true);
   const [perm, setPerm] = useState(getNotifyPermission());
   const [enabled, setEnabled] = useState(notificationsEnabled());
+  const [supportNote, setSupportNote] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSupportNote(notifySupportNote());
+  }, [enabled, perm]);
 
   useEffect(() => {
     let active = true;
@@ -86,13 +92,20 @@ export function SmartReminders() {
         </div>
         <button
           onClick={toggle}
-          className="flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground active:scale-95"
           aria-label={enabled ? "Mute notifications" : "Enable notifications"}
         >
           {enabled ? <Bell className="h-3 w-3 text-primary" /> : <BellOff className="h-3 w-3" />}
           {enabled ? "On" : "Off"}
         </button>
       </div>
+
+      {supportNote && (
+        <p className="mb-3 flex items-start gap-2 rounded-xl border border-accent/25 bg-accent/5 p-2.5 text-[11px] leading-relaxed text-muted-foreground">
+          <Smartphone className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
+          {supportNote}
+        </p>
+      )}
 
       {items.length === 0 ? (
         <p className="text-xs text-muted-foreground">All clear — nothing urgent right now. ✨</p>

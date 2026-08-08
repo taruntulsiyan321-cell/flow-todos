@@ -89,7 +89,7 @@ function JournalPage() {
       .order("created_at", { ascending: false })
       .limit(50);
     const next = data ?? [];
-    setEntries(next);
+    setEntries(next as unknown as Entry[]);
     cacheSet("journal", next);
     setLoading(false);
   };
