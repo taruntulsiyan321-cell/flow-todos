@@ -235,11 +235,12 @@
 @keyframes skeleton-sweep { to { transform: translateX(100%); } }
 .light .skeleton { background: oklch(0.92 0.02 280); }
 
-/* ===== Shimmer sweep (used on progress bars / rank track) ===== */
-@keyframes shimmer {
+/* ===== Sweep animation (used on progress bars / rank track) ===== */
+@keyframes sweep {
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(400%); }
 }
+.animate-sweep { animation: sweep 2.2s ease-in-out infinite; }
 
 /* ===== Soft pulsing neon ring (focus / active states) ===== */
 @keyframes neon-pulse {
