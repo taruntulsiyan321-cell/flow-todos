@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Bell, BellOff, Sparkles, AlertTriangle, Info, Trophy } from "lucide-react";
+import { Bell, BellOff, Sparkles, AlertTriangle, Info, Trophy, Smartphone } from "lucide-react";
 import { buildSmartReminders, type SmartReminder } from "@/lib/reminders";
 import {
   fireNotification,
   getNotifyPermission,
   notificationsEnabled,
+  notifySupportNote,
   requestNotificationPermission,
   setNotificationsEnabled,
 } from "@/lib/notifications";
@@ -21,6 +22,11 @@ export function SmartReminders() {
   const [loading, setLoading] = useState(true);
   const [perm, setPerm] = useState(getNotifyPermission());
   const [enabled, setEnabled] = useState(notificationsEnabled());
+  const [supportNote, setSupportNote] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSupportNote(notifySupportNote());
+  }, [enabled, perm]);
 
   useEffect(() => {
     let active = true;
