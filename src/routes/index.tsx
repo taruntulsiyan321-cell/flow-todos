@@ -84,7 +84,7 @@ function Landing() {
           <Link
             to="/auth"
             search={{ mode: "signup" }}
-            className="group inline-flex h-13 items-center justify-between rounded-2xl px-6 font-display text-base font-bold text-primary-foreground transition-transform hover:scale-[1.01] active:scale-[0.99]"
+            className="group inline-flex h-14 items-center justify-between rounded-2xl px-6 font-display text-base font-bold text-primary-foreground transition-transform hover:scale-[1.01] active:scale-[0.99]"
             style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}
           >
             <span>Start forging</span>

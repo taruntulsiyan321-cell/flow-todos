@@ -4,8 +4,6 @@ import {
   Flame,
   Sparkles,
   CheckSquare,
-  Trophy,
-  Plus,
   BookOpen,
   BarChart3,
   Clock,
