@@ -207,132 +207,151 @@ function Dashboard() {
   }
 
   return (
-    <div className="space-y-5 animate-page-in">
-      {/* Hero — greeting + level + streak */}
-      <div
-        className="relative overflow-hidden rounded-3xl border border-border p-6"
-        style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-card)" }}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-sm text-muted-foreground">{greeting},</p>
-            <h1 className="truncate text-2xl font-bold text-foreground">{firstName}</h1>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-3 py-1.5">
-            <Flame className="h-4 w-4 text-warning" />
-            <span className="text-sm font-bold text-foreground">{profile?.current_streak ?? 0}</span>
-            <span className="text-xs text-muted-foreground">
-              day{(profile?.current_streak ?? 0) === 1 ? "" : "s"}
+    <div className="animate-page-in">
+      {/* ── Masthead ───────────────────────────────────────── */}
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-border pb-5">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {greeting}
+          </p>
+          <h1 className="truncate font-display text-3xl font-extrabold text-foreground">
+            {firstName}
+          </h1>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5">
+            <Flame className="h-4 w-4 text-primary" />
+            <span className="font-display text-sm font-bold text-foreground">
+              {profile?.current_streak ?? 0}
+            </span>
+          </span>
+          <span className="rounded-full border border-primary/40 px-3 py-1.5 font-display text-sm font-bold text-primary">
+            LV {level}
+          </span>
+        </div>
+      </header>
+
+      {/* ── Level strip ────────────────────────────────────── */}
+      <div className="border-b border-border py-4">
+        <div className="mb-2 flex items-baseline justify-between">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {rankFor(level)}
+          </span>
+          <span className="font-display text-xs font-semibold text-muted-foreground">
+            {into} / {needed} XP
+          </span>
+        </div>
+        <XpBar into={into} needed={needed} />
+      </div>
+
+      {/* ── Tool rail ──────────────────────────────────────── */}
+      <div className="-mx-4 border-b border-border px-4 py-4 sm:-mx-6 sm:px-6">
+        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <RailLink to="/schedule" icon={<CalendarDays className="h-4 w-4" />} label="Schedule" />
+          <RailLink to="/habits" icon={<Flame className="h-4 w-4" />} label={`Habits ${habitsDone}/${habitsTotal}`} />
+          <RailLink to="/tasks" icon={<CheckSquare className="h-4 w-4" />} label={`Quests ${openTaskCount}`} />
+          <RailLink to="/timelog" icon={<Clock className="h-4 w-4" />} label="Time log" />
+          <RailLink to="/journal" icon={<BookOpen className="h-4 w-4" />} label="Journal" />
+          <RailLink to="/goals" icon={<Target className="h-4 w-4" />} label="Goals" />
+          <RailLink to="/coach" icon={<Sparkles className="h-4 w-4" />} label="Coach" />
+          <RailLink to="/analytics" icon={<BarChart3 className="h-4 w-4" />} label="Stats" />
+          <RailLink to="/life" icon={<Users className="h-4 w-4" />} label="Life OS" />
+        </div>
+      </div>
+
+      {/* ── Today feed ─────────────────────────────────────── */}
+      <div className="relative mt-6 space-y-6 pl-7">
+        <span
+          aria-hidden
+          className="absolute bottom-2 left-[7px] top-2 w-px"
+          style={{ background: "var(--gradient-xp)", opacity: 0.35 }}
+        />
+
+        <FeedItem label="Today's mission" accent>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="font-display text-lg font-bold text-foreground">
+                {totalActions === 0
+                  ? "Add a habit or quest to begin"
+                  : `${totalActions} action${totalActions === 1 ? "" : "s"} · +${missionTarget} XP`}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {doneActions} of {totalActions || "—"} complete
+              </p>
+            </div>
+            <span className="shrink-0 font-display text-3xl font-extrabold text-primary">
+              {dailyPct}%
             </span>
           </div>
-        </div>
-
-        <div className="mt-5">
-          <div className="mb-2 flex items-baseline justify-between">
-            <div className="flex items-baseline gap-2">
-              <span
-                className="text-3xl font-bold"
-                style={{
-                  background: "var(--gradient-primary)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                LV {level}
-              </span>
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">
-                {rankFor(level)}
-              </span>
-            </div>
-            <span className="text-xs font-medium text-muted-foreground">
-              {into} / {needed} XP
-            </span>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${dailyPct}%`, background: "var(--gradient-xp)" }}
+            />
           </div>
-          <XpBar into={into} needed={needed} />
-        </div>
-      </div>
+        </FeedItem>
 
-      {/* Today's Mission */}
-      <div
-        className="rounded-2xl border border-border p-5"
-        style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-glow-cyan)" }}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <Target className="h-4 w-4 text-primary" />
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Today's mission</p>
-            </div>
-            <p className="mt-1 text-base font-semibold text-foreground">
-              {totalActions === 0
-                ? "Add a habit or quest to begin"
-                : `Complete ${totalActions} action${totalActions === 1 ? "" : "s"} for +${missionTarget} XP`}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {doneActions} of {totalActions || "—"} done · {dailyPct}%
-            </p>
+        {suggested && (
+          <FeedItem label="Do this next">
+            <SuggestedActionCard suggested={suggested} />
+          </FeedItem>
+        )}
+
+        <FeedItem label="Nudges">
+          <InstallPrompt />
+          <SmartReminders />
+        </FeedItem>
+
+        <FeedItem label="Coach">
+          <AiCoachCard />
+        </FeedItem>
+
+        <FeedItem label="Recent activity">
+          <ActivityLog />
+        </FeedItem>
+
+        <FeedItem label="All time">
+          <div className="grid grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-card">
+            <StatChip label="Best streak" value={profile?.longest_streak ?? 0} />
+            <StatChip label="Total XP" value={profile?.xp ?? 0} />
+            <StatChip label="Streak" value={profile?.current_streak ?? 0} />
           </div>
-          <div
-            className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-lg font-bold"
-            style={{
-              background: dailyPct === 100 ? "var(--gradient-primary)" : "var(--muted)",
-              color: dailyPct === 100 ? "var(--primary-foreground)" : "var(--foreground)",
-            }}
-          >
-            {dailyPct}%
-          </div>
-        </div>
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${dailyPct}%`, background: "var(--gradient-xp)" }}
-          />
-        </div>
-      </div>
+        </FeedItem>
 
-      {/* Suggested next action */}
-      {suggested && (
-        <SuggestedActionCard suggested={suggested} />
-      )}
-
-      {/* Quick actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <QuickLink to="/schedule" icon={<CalendarDays className="h-5 w-5 text-primary" />} label="Schedule" sub="Today's to-dos" />
-        <QuickLink to="/habits" icon={<Flame className="h-5 w-5 text-warning" />} label="Habits" sub={`${habitsDone}/${habitsTotal} today`} />
-        <QuickLink to="/tasks" icon={<CheckSquare className="h-5 w-5 text-accent" />} label="Quests" sub={`${openTaskCount} open`} />
-        <QuickLink to="/goals" icon={<Target className="h-5 w-5 text-primary" />} label="Goals" sub="Vision → daily" />
-        <QuickLink to="/coach" icon={<Sparkles className="h-5 w-5 text-primary" />} label="Life Coach" sub="Evening review" />
-        <QuickLink to="/timelog" icon={<Clock className="h-5 w-5 text-accent" />} label="Time Log" sub="What & when" />
-        <QuickLink to="/life" icon={<Users className="h-5 w-5 text-success" />} label="Life OS" sub="All tools" />
-        <QuickLink to="/journal" icon={<BookOpen className="h-5 w-5 text-success" />} label="Journal" sub="Morning & evening" />
-        <QuickLink to="/analytics" icon={<BarChart3 className="h-5 w-5 text-primary" />} label="Stats" sub="Life analytics" />
-      </div>
-
-      {/* Install to home screen (hidden once installed / dismissed) */}
-      <InstallPrompt />
-
-      {/* Smart nudges (with notification toggle) */}
-      <SmartReminders />
-
-      {/* AI coach */}
-      <AiCoachCard />
-
-      {/* Activity log — transparency */}
-      <ActivityLog />
-
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
-        <StatChip icon={<Trophy className="h-4 w-4 text-warning" />} label="Best streak" value={profile?.longest_streak ?? 0} />
-        <StatChip icon={<Sparkles className="h-4 w-4 text-primary" />} label="Total XP" value={profile?.xp ?? 0} />
-        <StatChip icon={<Flame className="h-4 w-4 text-accent" />} label="Streak" value={profile?.current_streak ?? 0} />
-      </div>
-
-      {/* Quote */}
-      <div className="rounded-2xl border border-border p-5 text-center" style={{ background: "var(--gradient-card)" }}>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Daily insight</p>
-        <p className="mt-2 text-base font-medium italic text-foreground">"{quote}"</p>
+        <FeedItem label="Daily insight">
+          <p className="font-display text-lg font-semibold leading-snug text-foreground">
+            “{quote}”
+          </p>
+        </FeedItem>
       </div>
     </div>
+  );
+}
+
+function FeedItem({
+  label,
+  accent,
+  children,
+}: {
+  label: string;
+  accent?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="relative">
+      <span
+        aria-hidden
+        className="absolute -left-7 top-1.5 h-[15px] w-[15px] rounded-full border-2 border-background"
+        style={{
+          background: accent ? "var(--gradient-primary)" : "var(--muted)",
+          boxShadow: accent ? "var(--shadow-glow)" : undefined,
+        }}
+      />
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </p>
+      <div className="space-y-3">{children}</div>
+    </section>
   );
 }
 
@@ -358,12 +377,11 @@ function SuggestedActionCard({ suggested }: { suggested: NonNullable<SuggestedAc
   return (
     <Link
       to={to}
-      className="group flex items-center justify-between rounded-2xl border border-primary/30 p-4 transition-all hover:scale-[1.01] active:scale-[0.99]"
-      style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-glow)" }}
+      className="group flex items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-card p-4 transition-all hover:border-primary/60 active:scale-[0.99]"
+      style={{ boxShadow: "var(--shadow-glow)" }}
     >
       <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">Do this next</p>
-        <p className="mt-0.5 truncate text-sm font-semibold text-foreground">{title}</p>
+        <p className="truncate font-display text-base font-bold text-foreground">{title}</p>
         <p className="text-xs text-muted-foreground">{sub}</p>
       </div>
       <ArrowRight className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
@@ -371,39 +389,33 @@ function SuggestedActionCard({ suggested }: { suggested: NonNullable<SuggestedAc
   );
 }
 
-function QuickLink({
+function RailLink({
   to,
   icon,
   label,
-  sub,
 }: {
   to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/goals" | "/coach" | "/focus" | "/life" | "/schedule";
   icon: React.ReactNode;
   label: string;
-  sub: string;
 }) {
   return (
     <Link
       to={to}
-      className="group flex items-center justify-between rounded-2xl border border-border p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]"
-      style={{ background: "var(--gradient-card)" }}
+      className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:text-primary active:scale-95"
     >
-      <div>
-        <div className="mb-2">{icon}</div>
-        <p className="text-sm font-semibold text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground">{sub}</p>
-      </div>
-      <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+      <span className="text-primary">{icon}</span>
+      <span className="whitespace-nowrap">{label}</span>
     </Link>
   );
 }
 
-function StatChip({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+function StatChip({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-border p-3 text-center" style={{ background: "var(--gradient-card)" }}>
-      <div className="flex justify-center">{icon}</div>
-      <p className="mt-1 text-lg font-bold text-foreground">{value}</p>
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+    <div className="px-3 py-4 text-center">
+      <p className="font-display text-xl font-extrabold text-foreground">{value}</p>
+      <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
     </div>
   );
 }
