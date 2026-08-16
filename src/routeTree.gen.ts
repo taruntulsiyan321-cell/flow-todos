@@ -18,6 +18,7 @@ import { Route as AppScheduleRouteImport } from './routes/_app.schedule'
 import { Route as AppReviewsRouteImport } from './routes/_app.reviews'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppPlannerRouteImport } from './routes/_app.planner'
+import { Route as AppPlanRouteImport } from './routes/_app.plan'
 import { Route as AppPartnersRouteImport } from './routes/_app.partners'
 import { Route as AppOkrsRouteImport } from './routes/_app.okrs'
 import { Route as AppModerationRouteImport } from './routes/_app.moderation'
@@ -81,6 +82,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
 const AppPlannerRoute = AppPlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlanRoute = AppPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPartnersRoute = AppPartnersRouteImport.update({
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/moderation': typeof AppModerationRoute
   '/okrs': typeof AppOkrsRoute
   '/partners': typeof AppPartnersRoute
+  '/plan': typeof AppPlanRoute
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/reviews': typeof AppReviewsRoute
@@ -231,6 +238,7 @@ export interface FileRoutesByTo {
   '/moderation': typeof AppModerationRoute
   '/okrs': typeof AppOkrsRoute
   '/partners': typeof AppPartnersRoute
+  '/plan': typeof AppPlanRoute
   '/planner': typeof AppPlannerRoute
   '/profile': typeof AppProfileRoute
   '/reviews': typeof AppReviewsRoute
@@ -263,6 +271,7 @@ export interface FileRoutesById {
   '/_app/moderation': typeof AppModerationRoute
   '/_app/okrs': typeof AppOkrsRoute
   '/_app/partners': typeof AppPartnersRoute
+  '/_app/plan': typeof AppPlanRoute
   '/_app/planner': typeof AppPlannerRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/reviews': typeof AppReviewsRoute
@@ -295,6 +304,7 @@ export interface FileRouteTypes {
     | '/moderation'
     | '/okrs'
     | '/partners'
+    | '/plan'
     | '/planner'
     | '/profile'
     | '/reviews'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/moderation'
     | '/okrs'
     | '/partners'
+    | '/plan'
     | '/planner'
     | '/profile'
     | '/reviews'
@@ -356,6 +367,7 @@ export interface FileRouteTypes {
     | '/_app/moderation'
     | '/_app/okrs'
     | '/_app/partners'
+    | '/_app/plan'
     | '/_app/planner'
     | '/_app/profile'
     | '/_app/reviews'
@@ -439,6 +451,13 @@ declare module '@tanstack/react-router' {
       path: '/planner'
       fullPath: '/planner'
       preLoaderRoute: typeof AppPlannerRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/plan': {
+      id: '/_app/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof AppPlanRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/partners': {
@@ -599,6 +618,7 @@ interface AppRouteChildren {
   AppModerationRoute: typeof AppModerationRoute
   AppOkrsRoute: typeof AppOkrsRoute
   AppPartnersRoute: typeof AppPartnersRoute
+  AppPlanRoute: typeof AppPlanRoute
   AppPlannerRoute: typeof AppPlannerRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReviewsRoute: typeof AppReviewsRoute
@@ -628,6 +648,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppModerationRoute: AppModerationRoute,
   AppOkrsRoute: AppOkrsRoute,
   AppPartnersRoute: AppPartnersRoute,
+  AppPlanRoute: AppPlanRoute,
   AppPlannerRoute: AppPlannerRoute,
   AppProfileRoute: AppProfileRoute,
   AppReviewsRoute: AppReviewsRoute,
