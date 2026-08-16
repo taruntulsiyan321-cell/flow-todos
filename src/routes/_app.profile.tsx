@@ -129,15 +129,16 @@ function ProfilePage() {
       </div>
 
       <Link
-        to="/life"
+        to="/plan"
         className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4"
       >
         <Compass className="h-5 w-5 text-primary" />
         <div>
-          <p className="text-sm font-semibold">Life OS</p>
-          <p className="text-xs text-muted-foreground">Goals, coach, focus, reviews & more</p>
+          <p className="text-sm font-semibold">Plan</p>
+          <p className="text-xs text-muted-foreground">Daily schedule + weekly, monthly & yearly goals</p>
         </div>
       </Link>
+
 
       {/* Achievements */}
       <div>

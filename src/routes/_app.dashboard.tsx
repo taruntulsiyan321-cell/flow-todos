@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   Flame,
-  Sparkles,
+  
   CheckSquare,
   BookOpen,
   BarChart3,
@@ -245,17 +245,17 @@ function Dashboard() {
       {/* ── Tool rail ──────────────────────────────────────── */}
       <div className="-mx-4 border-b border-border px-4 py-4 sm:-mx-6 sm:px-6">
         <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <RailLink to="/schedule" icon={<CalendarDays className="h-4 w-4" />} label="Schedule" />
+          <RailLink to="/plan" icon={<CalendarDays className="h-4 w-4" />} label="Plan" />
           <RailLink to="/habits" icon={<Flame className="h-4 w-4" />} label={`Habits ${habitsDone}/${habitsTotal}`} />
           <RailLink to="/tasks" icon={<CheckSquare className="h-4 w-4" />} label={`Quests ${openTaskCount}`} />
           <RailLink to="/timelog" icon={<Clock className="h-4 w-4" />} label="Time log" />
           <RailLink to="/journal" icon={<BookOpen className="h-4 w-4" />} label="Journal" />
-          <RailLink to="/goals" icon={<Target className="h-4 w-4" />} label="Goals" />
-          <RailLink to="/coach" icon={<Sparkles className="h-4 w-4" />} label="Coach" />
           <RailLink to="/analytics" icon={<BarChart3 className="h-4 w-4" />} label="Stats" />
-          <RailLink to="/life" icon={<Users className="h-4 w-4" />} label="Life OS" />
+          <RailLink to="/communities" icon={<Users className="h-4 w-4" />} label="Crew" />
+          <RailLink to="/challenges" icon={<Target className="h-4 w-4" />} label="Challenges" />
         </div>
       </div>
+
 
       {/* ── Today feed ─────────────────────────────────────── */}
       <div className="relative mt-6 space-y-6 pl-7">
@@ -392,7 +392,8 @@ function RailLink({
   icon,
   label,
 }: {
-  to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/goals" | "/coach" | "/focus" | "/life" | "/schedule";
+  to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/plan" | "/challenges";
+
   icon: React.ReactNode;
   label: string;
 }) {
