@@ -392,7 +392,8 @@ function RailLink({
   icon,
   label,
 }: {
-  to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/goals" | "/coach" | "/focus" | "/life" | "/schedule";
+  to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/plan" | "/challenges";
+
   icon: React.ReactNode;
   label: string;
 }) {
