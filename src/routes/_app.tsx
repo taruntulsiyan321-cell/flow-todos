@@ -28,7 +28,7 @@ function AppLayout() {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    void supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user?.id ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       setUserId(session?.user?.id ?? null);
       if (event === "SIGNED_OUT" || (!session && event !== "INITIAL_SESSION")) {
