@@ -26,13 +26,17 @@ export async function buildSmartReminders(): Promise<SmartReminder[]> {
       .maybeSingle(),
     supabase.from("habits").select("id,name").eq("archived", false),
     supabase.from("habit_checkins").select("habit_id").eq("completed_on", today),
-    supabase.from("tasks").select("id,title,completed").eq("completed", false),
+    supabase
+      .from("daily_todos")
+      .select("id,title,completed")
+      .eq("scheduled_date", today)
+      .eq("completed", false),
   ]);
 
   const habits = habitsRes.data ?? [];
   const doneIds = new Set((checkinsRes.data ?? []).map((c) => c.habit_id));
   const remainingHabits = habits.filter((h) => !doneIds.has(h.id));
-  const openTasks = (tasksRes.data ?? []).filter((t) => !t.completed);
+  const openTodos = (tasksRes.data ?? []).filter((t) => !t.completed);
   const profile = profileRes.data;
 
   // Streak protection
@@ -41,7 +45,7 @@ export async function buildSmartReminders(): Promise<SmartReminder[]> {
       id: "streak-protect",
       tone: "warning",
       title: `Don't lose your ${profile.current_streak}-day streak`,
-      body: "One habit or task today keeps the fire burning.",
+      body: "One habit or planned task today keeps the fire burning.",
     });
   }
 
@@ -69,11 +73,11 @@ export async function buildSmartReminders(): Promise<SmartReminder[]> {
   }
 
   // Lots of open tasks
-  if (openTasks.length >= 5) {
+  if (openTodos.length >= 5) {
     reminders.push({
       id: "task-overflow",
       tone: "info",
-      title: `${openTasks.length} open quests`,
+      title: `${openTodos.length} tasks left in today's plan`,
       body: "Pick one and finish it — momentum beats backlog.",
     });
   }
@@ -82,13 +86,13 @@ export async function buildSmartReminders(): Promise<SmartReminder[]> {
   if (
     habits.length > 0 &&
     remainingHabits.length === 0 &&
-    openTasks.length === 0
+    openTodos.length === 0
   ) {
     reminders.push({
       id: "all-clear",
       tone: "success",
-      title: "Inbox zero achieved",
-      body: "All habits done, no open quests. Reflect in your journal.",
+      title: "Day cleared",
+      body: "Habits done and your plan is empty. Reflect in your journal.",
     });
   }
 
