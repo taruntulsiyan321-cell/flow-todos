@@ -2,8 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   Flame,
-  
-  CheckSquare,
   BookOpen,
   BarChart3,
   Clock,
@@ -15,7 +13,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { XpBar } from "@/components/XpBar";
 import { AiCoachCard } from "@/components/AiCoachCard";
-import { ActivityLog } from "@/components/ActivityLog";
 import { SmartReminders } from "@/components/SmartReminders";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { rankFor } from "@/lib/xp";
@@ -23,7 +20,23 @@ import { cacheGet, cacheSet } from "@/lib/page-cache";
 import { localISODate } from "@/lib/dates";
 
 export const Route = createFileRoute("/_app/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Forge" }] }),
+  head: () => ({
+    meta: [
+      { title: "Today — plan, habits & time | Forge" },
+      {
+        name: "description",
+        content:
+          "Your daily command centre: today's plan, habit streaks, time log and a daily insight to keep momentum.",
+      },
+      { property: "og:title", content: "Today — plan, habits & time | Forge" },
+      {
+        property: "og:description",
+        content: "See today's plan, habits and streak at a glance, then get one focused next action.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Dashboard,
 });
 
@@ -49,8 +62,8 @@ type Profile = {
 };
 
 type SuggestedAction =
-  | { kind: "habit"; id: string; title: string; xp: number }
-  | { kind: "task"; id: string; title: string; xp: number }
+  | { kind: "habit"; title: string; xp: number }
+  | { kind: "todo"; title: string }
   | { kind: "journal" }
   | null;
 
@@ -58,20 +71,18 @@ type DashCache = {
   profile: Profile | null;
   habitsTotal: number;
   habitsDone: number;
-  tasksTotal: number;
-  tasksDone: number;
-  openTaskCount: number;
+  todosTotal: number;
+  todosDone: number;
   suggested: SuggestedAction;
 };
 
 function Dashboard() {
-  const cached = cacheGet<DashCache>("dashboard");
+  const cached = cacheGet<DashCache>("dashboard", 120_000);
   const [profile, setProfile] = useState<Profile | null>(cached?.profile ?? null);
   const [habitsTotal, setHabitsTotal] = useState(cached?.habitsTotal ?? 0);
   const [habitsDone, setHabitsDone] = useState(cached?.habitsDone ?? 0);
-  const [tasksTotal, setTasksTotal] = useState(cached?.tasksTotal ?? 0);
-  const [tasksDone, setTasksDone] = useState(cached?.tasksDone ?? 0);
-  const [openTaskCount, setOpenTaskCount] = useState(cached?.openTaskCount ?? 0);
+  const [todosTotal, setTodosTotal] = useState(cached?.todosTotal ?? 0);
+  const [todosDone, setTodosDone] = useState(cached?.todosDone ?? 0);
   const [suggested, setSuggested] = useState<SuggestedAction>(cached?.suggested ?? null);
   const [loading, setLoading] = useState(!cached);
 
@@ -83,12 +94,12 @@ function Dashboard() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData.user?.id;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const uid = sessionData.session?.user?.id;
       if (!uid) return;
       const today = localISODate();
 
-      const [profileRes, habitsRes, checkinsRes, todayTasksRes, openTasksRes] = await Promise.all([
+      const [profileRes, habitsRes, checkinsRes, todosRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("display_name,xp,level,current_streak,longest_streak")
@@ -96,59 +107,42 @@ function Dashboard() {
           .maybeSingle(),
         supabase.from("habits").select("id,name,xp_reward").eq("archived", false),
         supabase.from("habit_checkins").select("habit_id").eq("completed_on", today),
-        supabase.from("tasks").select("id,completed").gte("created_at", `${today}T00:00:00Z`),
         supabase
-          .from("tasks")
-          .select("id,title,xp_reward,priority")
-          .eq("completed", false)
-          .order("priority", { ascending: true })
-          .limit(5),
+          .from("daily_todos")
+          .select("id,title,completed")
+          .eq("scheduled_date", today)
+          .order("sort_order", { ascending: true }),
       ]);
 
       if (!active) return;
       if (profileRes.data) setProfile(profileRes.data);
       const habits = habitsRes.data ?? [];
       const habitIds = new Set(habits.map((h) => h.id));
-      setHabitsTotal(habitIds.size);
       const doneToday = new Set((checkinsRes.data ?? []).map((c) => c.habit_id));
-      setHabitsDone(Array.from(doneToday).filter((id) => habitIds.has(id)).length);
-      const todayTasks = todayTasksRes.data ?? [];
-      setTasksTotal(todayTasks.length);
-      setTasksDone(todayTasks.filter((t) => t.completed).length);
+      const habitsDoneCount = [...doneToday].filter((id) => habitIds.has(id)).length;
+      setHabitsTotal(habitIds.size);
+      setHabitsDone(habitsDoneCount);
 
-      const openTasks = openTasksRes.data ?? [];
-      setOpenTaskCount(openTasks.length);
+      const todos = todosRes.data ?? [];
+      setTodosTotal(todos.length);
+      const todosDoneCount = todos.filter((t) => t.completed).length;
+      setTodosDone(todosDoneCount);
 
-      // Pick a suggested next action
-      let nextSuggested: SuggestedAction = null;
+      const openTodo = todos.find((t) => !t.completed);
       const remainingHabit = habits.find((h) => !doneToday.has(h.id));
-      if (remainingHabit) {
-        nextSuggested = {
-          kind: "habit",
-          id: remainingHabit.id,
-          title: remainingHabit.name,
-          xp: remainingHabit.xp_reward,
-        };
-      } else if (openTasks[0]) {
-        nextSuggested = {
-          kind: "task",
-          id: openTasks[0].id,
-          title: openTasks[0].title,
-          xp: openTasks[0].xp_reward,
-        };
-      } else {
-        nextSuggested = { kind: "journal" };
-      }
+      const nextSuggested: SuggestedAction = openTodo
+        ? { kind: "todo", title: openTodo.title }
+        : remainingHabit
+          ? { kind: "habit", title: remainingHabit.name, xp: remainingHabit.xp_reward }
+          : { kind: "journal" };
       setSuggested(nextSuggested);
 
-      const profileData = profileRes.data ?? null;
       cacheSet<DashCache>("dashboard", {
-        profile: profileData,
+        profile: profileRes.data ?? null,
         habitsTotal: habitIds.size,
-        habitsDone: Array.from(doneToday).filter((id) => habitIds.has(id)).length,
-        tasksTotal: todayTasks.length,
-        tasksDone: todayTasks.filter((t) => t.completed).length,
-        openTaskCount: openTasks.length,
+        habitsDone: habitsDoneCount,
+        todosTotal: todos.length,
+        todosDone: todosDoneCount,
         suggested: nextSuggested,
       });
 
@@ -159,7 +153,7 @@ function Dashboard() {
     };
   }, []);
 
-  // Compute level progress from xp using same curve as DB
+  // Level progress mirrors the DB curve (derived, never incremented).
   const { level, into, needed } = useMemo(() => {
     const xp = profile?.xp ?? 0;
     let lvl = 1;
@@ -173,12 +167,10 @@ function Dashboard() {
     return { level: lvl, into: rem, needed: need };
   }, [profile?.xp]);
 
-  const totalActions = habitsTotal + tasksTotal;
-  const doneActions = habitsDone + tasksDone;
+  const totalActions = habitsTotal + todosTotal;
+  const doneActions = habitsDone + todosDone;
   const dailyPct = totalActions === 0 ? 0 : Math.round((doneActions / totalActions) * 100);
-
-  // Today's mission XP target
-  const missionTarget = Math.max(50, habitsTotal * 10 + Math.min(tasksTotal, 3) * 15);
+  const missionTarget = Math.max(50, habitsTotal * 10 + Math.min(todosTotal, 3) * 15);
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -195,10 +187,6 @@ function Dashboard() {
       <div className="space-y-4 animate-page-in">
         <div className="skeleton h-40 rounded-3xl" />
         <div className="skeleton h-24 rounded-2xl" />
-        <div className="grid grid-cols-2 gap-3">
-          <div className="skeleton h-24 rounded-2xl" />
-          <div className="skeleton h-24 rounded-2xl" />
-        </div>
         <div className="skeleton h-32 rounded-2xl" />
       </div>
     );
@@ -245,9 +233,8 @@ function Dashboard() {
       {/* ── Tool rail ──────────────────────────────────────── */}
       <div className="-mx-4 border-b border-border px-4 py-4 sm:-mx-6 sm:px-6">
         <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <RailLink to="/plan" icon={<CalendarDays className="h-4 w-4" />} label="Plan" />
+          <RailLink to="/plan" icon={<CalendarDays className="h-4 w-4" />} label={`Plan ${todosDone}/${todosTotal}`} />
           <RailLink to="/habits" icon={<Flame className="h-4 w-4" />} label={`Habits ${habitsDone}/${habitsTotal}`} />
-          <RailLink to="/tasks" icon={<CheckSquare className="h-4 w-4" />} label={`Quests ${openTaskCount}`} />
           <RailLink to="/timelog" icon={<Clock className="h-4 w-4" />} label="Time log" />
           <RailLink to="/journal" icon={<BookOpen className="h-4 w-4" />} label="Journal" />
           <RailLink to="/analytics" icon={<BarChart3 className="h-4 w-4" />} label="Stats" />
@@ -255,7 +242,6 @@ function Dashboard() {
           <RailLink to="/challenges" icon={<Target className="h-4 w-4" />} label="Challenges" />
         </div>
       </div>
-
 
       {/* ── Today feed ─────────────────────────────────────── */}
       <div className="relative mt-6 space-y-6 pl-7">
@@ -270,7 +256,7 @@ function Dashboard() {
             <div className="min-w-0">
               <p className="font-display text-lg font-bold text-foreground">
                 {totalActions === 0
-                  ? "Add a habit or quest to begin"
+                  ? "Plan your day to begin"
                   : `${totalActions} action${totalActions === 1 ? "" : "s"} · +${missionTarget} XP`}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -300,23 +286,8 @@ function Dashboard() {
           <SmartReminders />
         </FeedItem>
 
-        <FeedItem label="Coach">
-          <AiCoachCard />
-        </FeedItem>
-
-        <FeedItem label="Recent activity">
-          <ActivityLog />
-        </FeedItem>
-
-        <FeedItem label="All time">
-          <div className="grid grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-card">
-            <StatChip label="Best streak" value={profile?.longest_streak ?? 0} />
-            <StatChip label="Total XP" value={profile?.xp ?? 0} />
-            <StatChip label="Streak" value={profile?.current_streak ?? 0} />
-          </div>
-        </FeedItem>
-
         <FeedItem label="Daily insight">
+          <AiCoachCard />
           <p className="font-display text-lg font-semibold leading-snug text-foreground">
             “{quote}”
           </p>
@@ -356,16 +327,16 @@ function FeedItem({
 function SuggestedActionCard({ suggested }: { suggested: NonNullable<SuggestedAction> }) {
   let title = "";
   let sub = "";
-  let to: "/habits" | "/tasks" | "/journal" = "/habits";
+  let to: "/habits" | "/plan" | "/journal" = "/habits";
 
-  if (suggested.kind === "habit") {
+  if (suggested.kind === "todo") {
+    title = `Next up: ${suggested.title}`;
+    sub = "From today's plan";
+    to = "/plan";
+  } else if (suggested.kind === "habit") {
     title = `Knock out: ${suggested.title}`;
     sub = `+${suggested.xp} XP · habit check-in`;
     to = "/habits";
-  } else if (suggested.kind === "task") {
-    title = `Tackle: ${suggested.title}`;
-    sub = `+${suggested.xp} XP · open quest`;
-    to = "/tasks";
   } else {
     title = "Reflect for a moment";
     sub = "+20 XP · journal entry";
@@ -392,8 +363,7 @@ function RailLink({
   icon,
   label,
 }: {
-  to: "/habits" | "/tasks" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/plan" | "/challenges";
-
+  to: "/habits" | "/journal" | "/analytics" | "/communities" | "/timelog" | "/plan" | "/challenges";
   icon: React.ReactNode;
   label: string;
 }) {
@@ -405,16 +375,5 @@ function RailLink({
       <span className="text-primary">{icon}</span>
       <span className="whitespace-nowrap">{label}</span>
     </Link>
-  );
-}
-
-function StatChip({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="px-3 py-4 text-center">
-      <p className="font-display text-xl font-extrabold text-foreground">{value}</p>
-      <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
-    </div>
   );
 }
