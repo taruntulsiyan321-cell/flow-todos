@@ -1,19 +1,24 @@
 import { useEffect, useState } from "react";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { getCoachInsight, type CoachInsight } from "@/lib/ai-coach";
+import { cacheGet, cacheSet } from "@/lib/page-cache";
+
+const CACHE_KEY = "coach-insight";
 
 export function AiCoachCard() {
-  const [data, setData] = useState<CoachInsight | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = cacheGet<CoachInsight>(CACHE_KEY, 15 * 60_000);
+  const [data, setData] = useState<CoachInsight | null>(cached ?? null);
+  const [loading, setLoading] = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
       const result = await getCoachInsight();
       setData(result);
+      cacheSet(CACHE_KEY, result);
     } catch {
       setData({
-        insight: "Keep going — every rep matters.",
+        insight: "Coach is offline right now — pick one task from today's plan and start it.",
         suggestions: [],
       });
     } finally {
@@ -22,7 +27,8 @@ export function AiCoachCard() {
   };
 
   useEffect(() => {
-    load();
+    if (!cached) void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -39,7 +45,7 @@ export function AiCoachCard() {
             <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">AI coach</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Coach</p>
             <p className="text-sm font-semibold text-foreground">Today's nudge</p>
           </div>
         </div>
@@ -47,21 +53,21 @@ export function AiCoachCard() {
           onClick={load}
           disabled={loading}
           className="rounded-full border border-border p-1.5 text-muted-foreground transition hover:text-foreground"
-          aria-label="Refresh"
+          aria-label="Refresh coach nudge"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
-      {loading && !data ? (
+      {!data ? (
         <div className="mt-4 space-y-2">
           <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
           <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
         </div>
-      ) : data ? (
+      ) : (
         <>
-          <p className="mt-3 text-sm font-medium italic text-foreground">"{data.insight}"</p>
-          {data.suggestions && data.suggestions.length > 0 && (
+          <p className="mt-3 text-sm font-medium italic text-foreground">“{data.insight}”</p>
+          {data.suggestions?.length > 0 && (
             <ul className="mt-4 space-y-2">
               {data.suggestions.map((s, i) => (
                 <li key={i} className="rounded-xl border border-border bg-card/40 p-3">
@@ -72,7 +78,7 @@ export function AiCoachCard() {
             </ul>
           )}
         </>
-      ) : null}
+      )}
     </div>
   );
 }
