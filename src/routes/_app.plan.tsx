@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   Plus,
@@ -532,6 +532,8 @@ function WeekBoard() {
   const [todos, setTodos] = useState<DailyTodo[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Record<string, string>>({});
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
 
   const weekEnd = shiftLocalISODate(weekStart, 6);
   const days = useMemo(
@@ -571,16 +573,25 @@ function WeekBoard() {
     const uid = await currentUserId();
     if (!uid) return;
     setDraft((p) => ({ ...p, [iso]: "" }));
-    const { error } = await lifeFrom("daily_todos").insert({
-      user_id: uid,
-      title: value,
-      scheduled_date: iso,
-      sort_order: todos.filter((t) => t.scheduled_date === iso).length,
-    });
-    if (error) return toast.error(error.message);
+    const { data, error } = await lifeFrom("daily_todos")
+      .insert({
+        user_id: uid,
+        title: value,
+        scheduled_date: iso,
+        sort_order: todos.filter((t) => t.scheduled_date === iso).length,
+      })
+      .select(TODO_COLS)
+      .single();
+    if (error) {
+      setDraft((p) => ({ ...p, [iso]: value }));
+      return toast.error(error.message);
+    }
+    // Append locally so you can keep typing block after block without a refetch.
+    if (data) setTodos((prev) => [...prev, data as DailyTodo]);
     cacheInvalidate("plan-day-");
-    void load();
+    inputRefs.current[iso]?.focus();
   };
+
 
   const toggle = async (t: DailyTodo) => {
     const next = !t.completed;
@@ -688,13 +699,32 @@ function WeekBoard() {
                     </li>
                   ))}
                 </ul>
-                <input
-                  value={draft[d.iso] ?? ""}
-                  onChange={(e) => setDraft((p) => ({ ...p, [d.iso]: e.target.value }))}
-                  onKeyDown={(e) => e.key === "Enter" && void add(d.iso)}
-                  placeholder="+ Add block"
-                  className="mt-2 w-full rounded-lg border border-dashed border-border bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
-                />
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    ref={(el) => {
+                      inputRefs.current[d.iso] = el;
+                    }}
+                    value={draft[d.iso] ?? ""}
+                    onChange={(e) => setDraft((p) => ({ ...p, [d.iso]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        void add(d.iso);
+                      }
+                    }}
+                    placeholder="+ Add block"
+                    className="min-w-0 flex-1 rounded-lg border border-dashed border-border bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                  />
+                  <button
+                    onClick={() => void add(d.iso)}
+                    disabled={!(draft[d.iso] ?? "").trim()}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border text-primary transition active:scale-90 disabled:opacity-40"
+                    aria-label={`Add block on ${d.label} ${d.day}`}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+
               </div>
             );
           })}
