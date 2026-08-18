@@ -614,9 +614,18 @@ function WeekBoard() {
 
   const remove = async (id: string) => {
     setTodos((prev) => prev.filter((t) => t.id !== id));
-    await lifeFrom("daily_todos").delete().eq("id", id);
     cacheInvalidate("plan-day-");
+    await deleteWithUndo({
+      table: "daily_todos",
+      id,
+      label: "Block",
+      refresh: async () => {
+        cacheInvalidate("plan-day-");
+        await load();
+      },
+    });
   };
+
 
   const total = todos.length;
   const done = todos.filter((t) => t.completed).length;
