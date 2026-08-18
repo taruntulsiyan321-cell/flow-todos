@@ -29,6 +29,7 @@ import {
 } from "@/lib/notifications";
 import { formatLocalDay, localISODate, shiftLocalISODate } from "@/lib/dates";
 import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
+import { deleteWithUndo } from "@/lib/undo";
 
 export const Route = createFileRoute("/_app/plan")({
   head: () => ({
