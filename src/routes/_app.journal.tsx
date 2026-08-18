@@ -13,6 +13,7 @@ import { WeeklyJournalSummary } from "@/components/WeeklyJournalSummary";
 import { dailyPrompt } from "@/lib/journal-prompts";
 import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
 import { formatLocalDay } from "@/lib/dates";
+import { deleteWithUndo } from "@/lib/undo";
 
 export const Route = createFileRoute("/_app/journal")({
   head: () => ({ meta: [{ title: "Journal — Forge" }] }),
