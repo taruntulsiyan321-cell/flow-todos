@@ -887,10 +887,27 @@ function GoalsPanel() {
   };
 
   const removeGoal = async (g: Goal) => {
+    const affected = goals.filter((x) => x.id === g.id || x.parent_id === g.id);
     setGoals((prev) => prev.filter((x) => x.id !== g.id && x.parent_id !== g.id));
     await lifeFrom("goals").update({ status: "abandoned" }).eq("id", g.id);
     await lifeFrom("goals").update({ status: "abandoned" }).eq("parent_id", g.id);
+    toast("Goal removed", {
+      duration: 8000,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          void (async () => {
+            for (const x of affected) {
+              await lifeFrom("goals").update({ status: x.status }).eq("id", x.id);
+            }
+            setGoals((prev) => [...prev, ...affected.filter((x) => !prev.some((p) => p.id === x.id))]);
+            toast.success("Goal restored");
+          })();
+        },
+      },
+    });
   };
+
 
   const scheduleToday = async (g: Goal) => {
     const uid = await currentUserId();
