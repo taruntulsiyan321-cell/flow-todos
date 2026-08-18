@@ -220,11 +220,18 @@ function TimeLogPage() {
   };
 
   const remove = async (id: string) => {
-    const { error } = await supabase.from("time_logs").delete().eq("id", id);
-    if (error) return toast.error(error.message);
     setEntries((es) => es.filter((x) => x.id !== id));
-    void loadRecent();
+    await deleteWithUndo({
+      table: "time_logs",
+      id,
+      label: "Log",
+      refresh: async () => {
+        await load();
+        await loadRecent();
+      },
+    });
   };
+
 
   const submitManual = async () => {
     if (!isCalendarDay(date)) return toast.error("Pick a valid day");
