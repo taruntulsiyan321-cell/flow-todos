@@ -13,6 +13,7 @@ import {
   shiftLocalISODate,
 } from "@/lib/dates";
 import { lifeFrom } from "@/lib/lifeos-db";
+import { deleteWithUndo } from "@/lib/undo";
 
 export const Route = createFileRoute("/_app/timelog")({
   head: () => ({ meta: [{ title: "Time Log — Forge" }] }),
