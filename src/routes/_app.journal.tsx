@@ -164,14 +164,23 @@ function JournalPage() {
   };
 
   const remove = async (id: string) => {
-    await supabase.from("journal_entries").delete().eq("id", id);
     setEntries((e) => {
       const next = e.filter((x) => x.id !== id);
       cacheSet("journal", next);
       return next;
     });
     cacheInvalidate("dashboard");
+    await deleteWithUndo({
+      table: "journal_entries",
+      id,
+      label: "Entry",
+      refresh: async () => {
+        cacheInvalidate("dashboard");
+        await load();
+      },
+    });
   };
+
 
   return (
     <div className="space-y-5 animate-page-in">
