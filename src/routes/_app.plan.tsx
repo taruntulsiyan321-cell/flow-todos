@@ -282,14 +282,19 @@ function DailyPlanner() {
 
   const remove = async (id: string) => {
     setTodos((prev) => prev.filter((t) => t.id !== id));
-    const { error } = await lifeFrom("daily_todos").delete().eq("id", id);
     cacheInvalidate("plan-day-");
-    if (error) {
-      toast.error(error.message);
-      return void load();
-    }
-    void loadHistory();
+    await deleteWithUndo({
+      table: "daily_todos",
+      id,
+      label: "Task",
+      refresh: async () => {
+        cacheInvalidate("plan-day-");
+        await load();
+        await loadHistory();
+      },
+    });
   };
+
 
   const copyPreviousDay = async () => {
     const uid = await currentUserId();
