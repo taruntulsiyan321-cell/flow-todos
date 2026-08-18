@@ -699,13 +699,32 @@ function WeekBoard() {
                     </li>
                   ))}
                 </ul>
-                <input
-                  value={draft[d.iso] ?? ""}
-                  onChange={(e) => setDraft((p) => ({ ...p, [d.iso]: e.target.value }))}
-                  onKeyDown={(e) => e.key === "Enter" && void add(d.iso)}
-                  placeholder="+ Add block"
-                  className="mt-2 w-full rounded-lg border border-dashed border-border bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
-                />
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    ref={(el) => {
+                      inputRefs.current[d.iso] = el;
+                    }}
+                    value={draft[d.iso] ?? ""}
+                    onChange={(e) => setDraft((p) => ({ ...p, [d.iso]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        void add(d.iso);
+                      }
+                    }}
+                    placeholder="+ Add block"
+                    className="min-w-0 flex-1 rounded-lg border border-dashed border-border bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                  />
+                  <button
+                    onClick={() => void add(d.iso)}
+                    disabled={!(draft[d.iso] ?? "").trim()}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border text-primary transition active:scale-90 disabled:opacity-40"
+                    aria-label={`Add block on ${d.label} ${d.day}`}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+
               </div>
             );
           })}
