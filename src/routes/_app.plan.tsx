@@ -29,6 +29,7 @@ import {
 } from "@/lib/notifications";
 import { formatLocalDay, localISODate, shiftLocalISODate } from "@/lib/dates";
 import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
+import { deleteWithUndo } from "@/lib/undo";
 
 export const Route = createFileRoute("/_app/plan")({
   head: () => ({
@@ -282,14 +283,19 @@ function DailyPlanner() {
 
   const remove = async (id: string) => {
     setTodos((prev) => prev.filter((t) => t.id !== id));
-    const { error } = await lifeFrom("daily_todos").delete().eq("id", id);
     cacheInvalidate("plan-day-");
-    if (error) {
-      toast.error(error.message);
-      return void load();
-    }
-    void loadHistory();
+    await deleteWithUndo({
+      table: "daily_todos",
+      id,
+      label: "Task",
+      refresh: async () => {
+        cacheInvalidate("plan-day-");
+        await load();
+        await loadHistory();
+      },
+    });
   };
+
 
   const copyPreviousDay = async () => {
     const uid = await currentUserId();
@@ -608,9 +614,18 @@ function WeekBoard() {
 
   const remove = async (id: string) => {
     setTodos((prev) => prev.filter((t) => t.id !== id));
-    await lifeFrom("daily_todos").delete().eq("id", id);
     cacheInvalidate("plan-day-");
+    await deleteWithUndo({
+      table: "daily_todos",
+      id,
+      label: "Block",
+      refresh: async () => {
+        cacheInvalidate("plan-day-");
+        await load();
+      },
+    });
   };
+
 
   const total = todos.length;
   const done = todos.filter((t) => t.completed).length;
@@ -872,10 +887,27 @@ function GoalsPanel() {
   };
 
   const removeGoal = async (g: Goal) => {
+    const affected = goals.filter((x) => x.id === g.id || x.parent_id === g.id);
     setGoals((prev) => prev.filter((x) => x.id !== g.id && x.parent_id !== g.id));
     await lifeFrom("goals").update({ status: "abandoned" }).eq("id", g.id);
     await lifeFrom("goals").update({ status: "abandoned" }).eq("parent_id", g.id);
+    toast("Goal removed", {
+      duration: 8000,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          void (async () => {
+            for (const x of affected) {
+              await lifeFrom("goals").update({ status: x.status }).eq("id", x.id);
+            }
+            setGoals((prev) => [...prev, ...affected.filter((x) => !prev.some((p) => p.id === x.id))]);
+            toast.success("Goal restored");
+          })();
+        },
+      },
+    });
   };
+
 
   const scheduleToday = async (g: Goal) => {
     const uid = await currentUserId();

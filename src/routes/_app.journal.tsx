@@ -13,6 +13,7 @@ import { WeeklyJournalSummary } from "@/components/WeeklyJournalSummary";
 import { dailyPrompt } from "@/lib/journal-prompts";
 import { cacheGet, cacheSet, cacheInvalidate } from "@/lib/page-cache";
 import { formatLocalDay } from "@/lib/dates";
+import { deleteWithUndo } from "@/lib/undo";
 
 export const Route = createFileRoute("/_app/journal")({
   head: () => ({ meta: [{ title: "Journal — Forge" }] }),
@@ -164,14 +165,23 @@ function JournalPage() {
   };
 
   const remove = async (id: string) => {
-    await supabase.from("journal_entries").delete().eq("id", id);
     setEntries((e) => {
       const next = e.filter((x) => x.id !== id);
       cacheSet("journal", next);
       return next;
     });
     cacheInvalidate("dashboard");
+    await deleteWithUndo({
+      table: "journal_entries",
+      id,
+      label: "Entry",
+      refresh: async () => {
+        cacheInvalidate("dashboard");
+        await load();
+      },
+    });
   };
+
 
   return (
     <div className="space-y-5 animate-page-in">
