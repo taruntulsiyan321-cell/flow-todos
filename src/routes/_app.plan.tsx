@@ -571,16 +571,25 @@ function WeekBoard() {
     const uid = await currentUserId();
     if (!uid) return;
     setDraft((p) => ({ ...p, [iso]: "" }));
-    const { error } = await lifeFrom("daily_todos").insert({
-      user_id: uid,
-      title: value,
-      scheduled_date: iso,
-      sort_order: todos.filter((t) => t.scheduled_date === iso).length,
-    });
-    if (error) return toast.error(error.message);
+    const { data, error } = await lifeFrom("daily_todos")
+      .insert({
+        user_id: uid,
+        title: value,
+        scheduled_date: iso,
+        sort_order: todos.filter((t) => t.scheduled_date === iso).length,
+      })
+      .select(TODO_COLS)
+      .single();
+    if (error) {
+      setDraft((p) => ({ ...p, [iso]: value }));
+      return toast.error(error.message);
+    }
+    // Append locally so you can keep typing block after block without a refetch.
+    if (data) setTodos((prev) => [...prev, data as DailyTodo]);
     cacheInvalidate("plan-day-");
-    void load();
+    inputRefs.current[iso]?.focus();
   };
+
 
   const toggle = async (t: DailyTodo) => {
     const next = !t.completed;
