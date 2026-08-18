@@ -532,6 +532,8 @@ function WeekBoard() {
   const [todos, setTodos] = useState<DailyTodo[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Record<string, string>>({});
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
 
   const weekEnd = shiftLocalISODate(weekStart, 6);
   const days = useMemo(
