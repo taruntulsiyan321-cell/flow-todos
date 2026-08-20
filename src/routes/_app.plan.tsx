@@ -936,6 +936,21 @@ function GoalsPanel() {
       .eq("id", g.id);
   };
 
+  /** Set / clear the date the goal must be finished by (also applies to its sub-goals). */
+  const setDeadline = async (g: Goal, iso: string) => {
+    const value = iso || null;
+    setGoals((prev) =>
+      prev.map((x) => (x.id === g.id || x.parent_id === g.id ? { ...x, target_date: value } : x)),
+    );
+    const { error } = await lifeFrom("goals")
+      .update({ target_date: value, updated_at: new Date().toISOString() })
+      .eq("id", g.id);
+    if (error) return toast.error(error.message);
+    await lifeFrom("goals").update({ target_date: value }).eq("parent_id", g.id);
+    toast.success(value ? "Deadline set" : "Deadline cleared");
+  };
+
+
   const completeGoal = async (g: Goal) => {
     setGoals((prev) =>
       prev.map((x) => (x.id === g.id ? { ...x, status: "completed", progress: 100 } : x)),
