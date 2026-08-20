@@ -176,7 +176,15 @@ function PlanPage() {
       </div>
 
       <div className="mt-5">
-        {tab === "today" ? <DailyPlanner /> : tab === "week" ? <WeekBoard /> : <GoalsPanel />}
+        {tab === "today" ? (
+          <DailyPlanner />
+        ) : tab === "week" ? (
+          <WeekBoard />
+        ) : tab === "goals" ? (
+          <GoalsPanel />
+        ) : (
+          <NotepadList />
+        )}
       </div>
     </div>
   );
