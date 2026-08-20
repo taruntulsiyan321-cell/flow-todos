@@ -1077,12 +1077,15 @@ function GoalsPanel() {
                         {kids.length > 0
                           ? `${kids.filter((k) => k.status === "completed").length}/${kids.length} sub-goals`
                           : "No sub-goals yet"}
-                        {g.target_date
-                          ? ` · by ${formatLocalDay(g.target_date, { month: "short", day: "numeric" })}`
-                          : ""}
                         {g.status === "completed" ? " · Completed" : ""}
                       </span>
+                      {g.target_date && (
+                        <span className="mt-1.5 block">
+                          <DeadlineBadge iso={g.target_date} done={g.status === "completed"} />
+                        </span>
+                      )}
                     </span>
+
                   </button>
                   <div className="flex shrink-0 items-center gap-1">
                     <span className="font-display text-lg font-extrabold text-primary">{pct}%</span>
