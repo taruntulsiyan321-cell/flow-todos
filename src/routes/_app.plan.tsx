@@ -1165,6 +1165,27 @@ function GoalsPanel() {
                       className="w-full rounded-lg border border-dashed border-border bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
                     />
 
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Complete by
+                      </span>
+                      <input
+                        type="date"
+                        value={g.target_date ?? ""}
+                        onChange={(e) => setDeadline(g, e.target.value)}
+                        className="rounded-lg border border-border bg-transparent px-2 py-1 text-xs text-foreground outline-none focus:border-primary/50"
+                      />
+                      {g.target_date && (
+                        <button
+                          onClick={() => setDeadline(g, "")}
+                          className="text-[11px] text-muted-foreground hover:text-destructive"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+
+
                     {kids.length === 0 && g.status !== "completed" && (
                       <div className="pt-1">
                         <div className="mb-1 flex justify-between text-[11px] text-muted-foreground">
