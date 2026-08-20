@@ -1233,3 +1233,198 @@ function GoalsPanel() {
     </div>
   );
 }
+
+/* ─────────────── Notepad: standing to-do list (no dates) ─────────────── */
+
+function NotepadList() {
+  const [items, setItems] = useState<NotepadItem[]>(
+    cacheGet<NotepadItem[]>("plan-notepad") ?? [],
+  );
+  const [loading, setLoading] = useState(!cacheGet("plan-notepad"));
+  const [title, setTitle] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const load = async () => {
+    const { data, error } = await lifeFrom("notepad_todos")
+      .select(NOTEPAD_COLS)
+      .order("completed", { ascending: true })
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (error) toast.error(error.message);
+    const rows = (data as NotepadItem[]) ?? [];
+    setItems(rows);
+    cacheSet("plan-notepad", rows);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const open = items.filter((i) => !i.completed);
+  const done = items
+    .filter((i) => i.completed)
+    .sort((a, b) => (b.completed_at ?? "").localeCompare(a.completed_at ?? ""));
+
+  const add = async () => {
+    const value = title.trim();
+    if (!value) return;
+    const uid = await currentUserId();
+    if (!uid) return;
+    setTitle("");
+    inputRef.current?.focus();
+    const { data, error } = await lifeFrom("notepad_todos")
+      .insert({ user_id: uid, title: value, sort_order: open.length })
+      .select(NOTEPAD_COLS)
+      .maybeSingle();
+    if (error) return toast.error(error.message);
+    if (data) {
+      const next = [data as NotepadItem, ...items];
+      setItems(next);
+      cacheSet("plan-notepad", next);
+    }
+  };
+
+  const toggle = async (item: NotepadItem) => {
+    const completed = !item.completed;
+    const next = items.map((i) =>
+      i.id === item.id
+        ? { ...i, completed, completed_at: completed ? new Date().toISOString() : null }
+        : i,
+    );
+    setItems(next);
+    cacheSet("plan-notepad", next);
+    const { error } = await lifeFrom("notepad_todos").update({ completed }).eq("id", item.id);
+    if (error) {
+      toast.error(error.message);
+      void load();
+      return;
+    }
+    if (completed) toast.success("Moved to history");
+  };
+
+  const remove = async (item: NotepadItem) => {
+    await deleteWithUndo({
+      table: "notepad_todos",
+      id: item.id,
+      label: "Item",
+      refresh: load,
+    });
+  };
+
+  return (
+    <div className="space-y-5 animate-page-in">
+      <div
+        className="rounded-2xl border border-border p-4"
+        style={{ background: "var(--gradient-card)" }}
+      >
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+          My list
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          A plain notepad — no dates, no streaks. Tick something off and it drops into history.
+        </p>
+        <p className="mt-2 font-display text-2xl font-extrabold text-foreground">
+          {open.length} <span className="text-sm font-semibold text-muted-foreground">to do</span>
+        </p>
+      </div>
+
+      <div className="flex gap-2 rounded-2xl border border-border bg-card p-3">
+        <Input
+          ref={inputRef}
+          placeholder="Write anything you have to do…"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && void add()}
+        />
+        <Button onClick={add} className="shrink-0 gap-1">
+          <Plus className="h-4 w-4" /> Add
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="skeleton h-40 rounded-2xl" />
+      ) : open.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border p-10 text-center">
+          <Check className="mx-auto h-6 w-6 text-primary" />
+          <p className="mt-2 font-display font-semibold text-foreground">List is clear</p>
+          <p className="mt-1 text-sm text-muted-foreground">Jot down whatever's on your mind.</p>
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {open.map((i) => (
+            <li
+              key={i.id}
+              className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition hover:border-primary/40"
+            >
+              <button
+                onClick={() => toggle(i)}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-border transition hover:border-primary active:scale-90"
+                aria-label="Mark done"
+              />
+              <span className="min-w-0 flex-1 text-sm text-foreground">{i.title}</span>
+              <button
+                onClick={() => remove(i)}
+                className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition hover:text-destructive group-hover:opacity-100"
+                aria-label="Delete item"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {done.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-3">
+          <button
+            onClick={() => setShowHistory((v) => !v)}
+            className="flex w-full items-center justify-between text-sm font-semibold text-foreground"
+          >
+            <span>History · {done.length} done</span>
+            {showHistory ? (
+              <ChevronDown className="h-4 w-4 text-primary" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          {showHistory && (
+            <ul className="mt-3 space-y-2">
+              {done.map((i) => (
+                <li key={i.id} className="group flex items-center gap-3">
+                  <button
+                    onClick={() => toggle(i)}
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-primary-foreground active:scale-90"
+                    style={{ background: "var(--gradient-primary)" }}
+                    aria-label="Restore to list"
+                  >
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </button>
+                  <span className="min-w-0 flex-1 text-sm text-muted-foreground line-through">
+                    {i.title}
+                  </span>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    {i.completed_at
+                      ? new Date(i.completed_at).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : ""}
+                  </span>
+                  <button
+                    onClick={() => remove(i)}
+                    className="rounded p-1 text-muted-foreground opacity-0 transition hover:text-destructive group-hover:opacity-100"
+                    aria-label="Delete item"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
