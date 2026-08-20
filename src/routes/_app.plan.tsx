@@ -77,12 +77,64 @@ const TABS = [
   { key: "today", label: "Today" },
   { key: "week", label: "Week" },
   { key: "goals", label: "Goals" },
+  { key: "list", label: "List" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
 
 const TODO_COLS = "id,title,scheduled_date,completed,completed_at,remind_at,sort_order,goal_id";
 const GOAL_COLS = "id,title,horizon,progress,status,target_date,parent_id";
+const NOTEPAD_COLS = "id,title,completed,completed_at,sort_order,created_at";
+
+type NotepadItem = {
+  id: string;
+  title: string;
+  completed: boolean;
+  completed_at: string | null;
+  sort_order: number;
+  created_at: string;
+};
+
+/** Whole days from today until an end date (negative = overdue). */
+function daysUntil(iso: string): number {
+  const [y, m, d] = iso.split("-").map(Number);
+  const target = new Date(y, m - 1, d).setHours(0, 0, 0, 0);
+  const today = new Date().setHours(0, 0, 0, 0);
+  return Math.round((target - today) / 86400000);
+}
+
+function DeadlineBadge({ iso, done }: { iso: string; done?: boolean }) {
+  const left = daysUntil(iso);
+  const tone = done
+    ? "border-border text-muted-foreground"
+    : left < 0
+      ? "border-destructive/40 bg-destructive/10 text-destructive"
+      : left <= 3
+        ? "border-primary/50 bg-primary/10 text-primary"
+        : "border-border text-muted-foreground";
+  const text = done
+    ? `done · ${formatLocalDay(iso, { month: "short", day: "numeric" })}`
+    : left < 0
+      ? `${Math.abs(left)}d overdue`
+      : left === 0
+        ? "due today"
+        : left === 1
+          ? "1 day left"
+          : `${left} days left`;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold",
+        tone,
+      )}
+      title={`Deadline: ${formatLocalDay(iso, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}`}
+    >
+      <CalendarDays className="h-3 w-3" />
+      {text}
+    </span>
+  );
+}
+
 
 function PlanPage() {
   const [tab, setTab] = useState<TabKey>("today");
@@ -124,7 +176,15 @@ function PlanPage() {
       </div>
 
       <div className="mt-5">
-        {tab === "today" ? <DailyPlanner /> : tab === "week" ? <WeekBoard /> : <GoalsPanel />}
+        {tab === "today" ? (
+          <DailyPlanner />
+        ) : tab === "week" ? (
+          <WeekBoard />
+        ) : tab === "goals" ? (
+          <GoalsPanel />
+        ) : (
+          <NotepadList />
+        )}
       </div>
     </div>
   );
@@ -876,6 +936,21 @@ function GoalsPanel() {
       .eq("id", g.id);
   };
 
+  /** Set / clear the date the goal must be finished by (also applies to its sub-goals). */
+  const setDeadline = async (g: Goal, iso: string) => {
+    const value = iso || null;
+    setGoals((prev) =>
+      prev.map((x) => (x.id === g.id || x.parent_id === g.id ? { ...x, target_date: value } : x)),
+    );
+    const { error } = await lifeFrom("goals")
+      .update({ target_date: value, updated_at: new Date().toISOString() })
+      .eq("id", g.id);
+    if (error) return toast.error(error.message);
+    await lifeFrom("goals").update({ target_date: value }).eq("parent_id", g.id);
+    toast.success(value ? "Deadline set" : "Deadline cleared");
+  };
+
+
   const completeGoal = async (g: Goal) => {
     setGoals((prev) =>
       prev.map((x) => (x.id === g.id ? { ...x, status: "completed", progress: 100 } : x)),
@@ -1017,12 +1092,15 @@ function GoalsPanel() {
                         {kids.length > 0
                           ? `${kids.filter((k) => k.status === "completed").length}/${kids.length} sub-goals`
                           : "No sub-goals yet"}
-                        {g.target_date
-                          ? ` · by ${formatLocalDay(g.target_date, { month: "short", day: "numeric" })}`
-                          : ""}
                         {g.status === "completed" ? " · Completed" : ""}
                       </span>
+                      {g.target_date && (
+                        <span className="mt-1.5 block">
+                          <DeadlineBadge iso={g.target_date} done={g.status === "completed"} />
+                        </span>
+                      )}
                     </span>
+
                   </button>
                   <div className="flex shrink-0 items-center gap-1">
                     <span className="font-display text-lg font-extrabold text-primary">{pct}%</span>
@@ -1102,6 +1180,27 @@ function GoalsPanel() {
                       className="w-full rounded-lg border border-dashed border-border bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
                     />
 
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Complete by
+                      </span>
+                      <input
+                        type="date"
+                        value={g.target_date ?? ""}
+                        onChange={(e) => setDeadline(g, e.target.value)}
+                        className="rounded-lg border border-border bg-transparent px-2 py-1 text-xs text-foreground outline-none focus:border-primary/50"
+                      />
+                      {g.target_date && (
+                        <button
+                          onClick={() => setDeadline(g, "")}
+                          className="text-[11px] text-muted-foreground hover:text-destructive"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+
+
                     {kids.length === 0 && g.status !== "completed" && (
                       <div className="pt-1">
                         <div className="mb-1 flex justify-between text-[11px] text-muted-foreground">
@@ -1130,6 +1229,201 @@ function GoalsPanel() {
             );
           })}
         </ul>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────── Notepad: standing to-do list (no dates) ─────────────── */
+
+function NotepadList() {
+  const [items, setItems] = useState<NotepadItem[]>(
+    cacheGet<NotepadItem[]>("plan-notepad") ?? [],
+  );
+  const [loading, setLoading] = useState(!cacheGet("plan-notepad"));
+  const [title, setTitle] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const load = async () => {
+    const { data, error } = await lifeFrom("notepad_todos")
+      .select(NOTEPAD_COLS)
+      .order("completed", { ascending: true })
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (error) toast.error(error.message);
+    const rows = (data as NotepadItem[]) ?? [];
+    setItems(rows);
+    cacheSet("plan-notepad", rows);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const open = items.filter((i) => !i.completed);
+  const done = items
+    .filter((i) => i.completed)
+    .sort((a, b) => (b.completed_at ?? "").localeCompare(a.completed_at ?? ""));
+
+  const add = async () => {
+    const value = title.trim();
+    if (!value) return;
+    const uid = await currentUserId();
+    if (!uid) return;
+    setTitle("");
+    inputRef.current?.focus();
+    const { data, error } = await lifeFrom("notepad_todos")
+      .insert({ user_id: uid, title: value, sort_order: open.length })
+      .select(NOTEPAD_COLS)
+      .maybeSingle();
+    if (error) return toast.error(error.message);
+    if (data) {
+      const next = [data as NotepadItem, ...items];
+      setItems(next);
+      cacheSet("plan-notepad", next);
+    }
+  };
+
+  const toggle = async (item: NotepadItem) => {
+    const completed = !item.completed;
+    const next = items.map((i) =>
+      i.id === item.id
+        ? { ...i, completed, completed_at: completed ? new Date().toISOString() : null }
+        : i,
+    );
+    setItems(next);
+    cacheSet("plan-notepad", next);
+    const { error } = await lifeFrom("notepad_todos").update({ completed }).eq("id", item.id);
+    if (error) {
+      toast.error(error.message);
+      void load();
+      return;
+    }
+    if (completed) toast.success("Moved to history");
+  };
+
+  const remove = async (item: NotepadItem) => {
+    await deleteWithUndo({
+      table: "notepad_todos",
+      id: item.id,
+      label: "Item",
+      refresh: load,
+    });
+  };
+
+  return (
+    <div className="space-y-5 animate-page-in">
+      <div
+        className="rounded-2xl border border-border p-4"
+        style={{ background: "var(--gradient-card)" }}
+      >
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+          My list
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          A plain notepad — no dates, no streaks. Tick something off and it drops into history.
+        </p>
+        <p className="mt-2 font-display text-2xl font-extrabold text-foreground">
+          {open.length} <span className="text-sm font-semibold text-muted-foreground">to do</span>
+        </p>
+      </div>
+
+      <div className="flex gap-2 rounded-2xl border border-border bg-card p-3">
+        <Input
+          ref={inputRef}
+          placeholder="Write anything you have to do…"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && void add()}
+        />
+        <Button onClick={add} className="shrink-0 gap-1">
+          <Plus className="h-4 w-4" /> Add
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="skeleton h-40 rounded-2xl" />
+      ) : open.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border p-10 text-center">
+          <Check className="mx-auto h-6 w-6 text-primary" />
+          <p className="mt-2 font-display font-semibold text-foreground">List is clear</p>
+          <p className="mt-1 text-sm text-muted-foreground">Jot down whatever's on your mind.</p>
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {open.map((i) => (
+            <li
+              key={i.id}
+              className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition hover:border-primary/40"
+            >
+              <button
+                onClick={() => toggle(i)}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-border transition hover:border-primary active:scale-90"
+                aria-label="Mark done"
+              />
+              <span className="min-w-0 flex-1 text-sm text-foreground">{i.title}</span>
+              <button
+                onClick={() => remove(i)}
+                className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition hover:text-destructive group-hover:opacity-100"
+                aria-label="Delete item"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {done.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-3">
+          <button
+            onClick={() => setShowHistory((v) => !v)}
+            className="flex w-full items-center justify-between text-sm font-semibold text-foreground"
+          >
+            <span>History · {done.length} done</span>
+            {showHistory ? (
+              <ChevronDown className="h-4 w-4 text-primary" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          {showHistory && (
+            <ul className="mt-3 space-y-2">
+              {done.map((i) => (
+                <li key={i.id} className="group flex items-center gap-3">
+                  <button
+                    onClick={() => toggle(i)}
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-primary-foreground active:scale-90"
+                    style={{ background: "var(--gradient-primary)" }}
+                    aria-label="Restore to list"
+                  >
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </button>
+                  <span className="min-w-0 flex-1 text-sm text-muted-foreground line-through">
+                    {i.title}
+                  </span>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    {i.completed_at
+                      ? new Date(i.completed_at).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : ""}
+                  </span>
+                  <button
+                    onClick={() => remove(i)}
+                    className="rounded p-1 text-muted-foreground opacity-0 transition hover:text-destructive group-hover:opacity-100"
+                    aria-label="Delete item"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
     </div>
   );
