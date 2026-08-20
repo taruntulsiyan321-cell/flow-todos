@@ -77,12 +77,64 @@ const TABS = [
   { key: "today", label: "Today" },
   { key: "week", label: "Week" },
   { key: "goals", label: "Goals" },
+  { key: "list", label: "List" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
 
 const TODO_COLS = "id,title,scheduled_date,completed,completed_at,remind_at,sort_order,goal_id";
 const GOAL_COLS = "id,title,horizon,progress,status,target_date,parent_id";
+const NOTEPAD_COLS = "id,title,completed,completed_at,sort_order,created_at";
+
+type NotepadItem = {
+  id: string;
+  title: string;
+  completed: boolean;
+  completed_at: string | null;
+  sort_order: number;
+  created_at: string;
+};
+
+/** Whole days from today until an end date (negative = overdue). */
+function daysUntil(iso: string): number {
+  const [y, m, d] = iso.split("-").map(Number);
+  const target = new Date(y, m - 1, d).setHours(0, 0, 0, 0);
+  const today = new Date().setHours(0, 0, 0, 0);
+  return Math.round((target - today) / 86400000);
+}
+
+function DeadlineBadge({ iso, done }: { iso: string; done?: boolean }) {
+  const left = daysUntil(iso);
+  const tone = done
+    ? "border-border text-muted-foreground"
+    : left < 0
+      ? "border-destructive/40 bg-destructive/10 text-destructive"
+      : left <= 3
+        ? "border-primary/50 bg-primary/10 text-primary"
+        : "border-border text-muted-foreground";
+  const text = done
+    ? `done · ${formatLocalDay(iso, { month: "short", day: "numeric" })}`
+    : left < 0
+      ? `${Math.abs(left)}d overdue`
+      : left === 0
+        ? "due today"
+        : left === 1
+          ? "1 day left"
+          : `${left} days left`;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold",
+        tone,
+      )}
+      title={`Deadline: ${formatLocalDay(iso, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}`}
+    >
+      <CalendarDays className="h-3 w-3" />
+      {text}
+    </span>
+  );
+}
+
 
 function PlanPage() {
   const [tab, setTab] = useState<TabKey>("today");
